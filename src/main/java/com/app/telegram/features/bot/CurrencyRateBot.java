@@ -28,7 +28,7 @@ public class CurrencyRateBot implements LongPollingSingleThreadUpdateConsumer {
             if (messageText.equals("/start")) {
                 SendMessage message = SendMessage.builder()
                         .chatId(chatId)
-                        .text("How can I help you, " + userName + "?")
+                        .text("Чим я можу допомогти, " + userName + "?")
                         .replyMarkup(KeyboardFactory.getMainKeyboard())
                         .build();
                 try {

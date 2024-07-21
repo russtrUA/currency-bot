@@ -40,7 +40,7 @@ public class CallbackHandler {
                 sendSettingsKeyboard(chatId);
                 break;
             case "back_to_menu":
-                sendMainKeyboard(chatId, "How can I help you?");
+                sendMainKeyboard(chatId, "Чим я можу допомогти?");
                 break;
             case "get_info":
                 handleGetInfo(chatId, userSettings);
@@ -104,7 +104,7 @@ public class CallbackHandler {
     private void sendSettingsKeyboard(long chatId) {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
-                .text("Settings")
+                .text("Виберіть налаштування:")
                 .replyMarkup(KeyboardFactory.getSettingsKeyboard())
                 .build();
         try {
@@ -117,7 +117,7 @@ public class CallbackHandler {
     private void sendBankSettingsKeyboard(long chatId, UserSettings userSettings) {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
-                .text("Choose a bank:")
+                .text("Виберіть банк:")
                 .replyMarkup(KeyboardFactory.getBankSettingsKeyboard(userSettings))
                 .build();
         try {
@@ -130,7 +130,7 @@ public class CallbackHandler {
     private void sendCurrencySettingsKeyboard(long chatId, UserSettings userSettings) {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
-                .text("Choose a currency:")
+                .text("Виберіть валюту:")
                 .replyMarkup(KeyboardFactory.getCurrencySettingsKeyboard(userSettings))
                 .build();
         try {
@@ -143,7 +143,7 @@ public class CallbackHandler {
     private void sendDecimalPlacesSettingsKeyboard(long chatId, UserSettings userSettings) {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
-                .text("Choose the number of decimal places:")
+                .text("Виберіть кількість знаків після коми:")
                 .replyMarkup(KeyboardFactory.getDecimalPlacesSettingsKeyboard(userSettings))
                 .build();
         try {
@@ -156,7 +156,7 @@ public class CallbackHandler {
     private void sendNotificationsSettingsKeyboard(long chatId, UserSettings userSettings) {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
-                .text("Choose notification time:")
+                .text("Виберіть час сповіщення:")
                 .replyMarkup(KeyboardFactory.getNotificationsSettingsKeyboard(userSettings))
                 .build();
         try {
