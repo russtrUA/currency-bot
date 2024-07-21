@@ -1,5 +1,8 @@
 package com.app.telegram.features.bot;
 
+import com.app.telegram.features.user.UserSettings;
+import com.app.telegram.model.Bank;
+import com.app.telegram.model.Currency;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
@@ -28,39 +31,39 @@ public class KeyboardFactory {
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    public static InlineKeyboardMarkup getBankSettingsKeyboard() {
+    public static InlineKeyboardMarkup getBankSettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
-        keyboardRows.add(createRow("PrivatBank", "PrivatBank"));
-        keyboardRows.add(createRow("Monobank", "Monobank"));
-        keyboardRows.add(createRow("NBU", "NBU"));
+        keyboardRows.add(createRowWithCheck("PrivatBank", "PrivatBank", userSettings.getChosenBanks().contains(Bank.Pryvatbank)));
+        keyboardRows.add(createRowWithCheck("Monobank", "Monobank", userSettings.getChosenBanks().contains(Bank.Monobank)));
+        keyboardRows.add(createRowWithCheck("NBU", "NBU", userSettings.getChosenBanks().contains(Bank.NBU)));
         keyboardRows.add(createRow(BACK_BUTTON, "back"));
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    public static InlineKeyboardMarkup getCurrencySettingsKeyboard() {
+    public static InlineKeyboardMarkup getCurrencySettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
-        keyboardRows.add(createRow("EUR", "EUR"));
-        keyboardRows.add(createRow("USD", "USD"));
+        keyboardRows.add(createRowWithCheck("EUR", "EUR", userSettings.getChosenCurrencies().contains(Currency.EUR)));
+        keyboardRows.add(createRowWithCheck("USD", "USD", userSettings.getChosenCurrencies().contains(Currency.USD)));
         keyboardRows.add(createRow(BACK_BUTTON, "back"));
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    public static InlineKeyboardMarkup getDecimalPlacesSettingsKeyboard() {
+    public static InlineKeyboardMarkup getDecimalPlacesSettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
-        keyboardRows.add(createRow("2", "2"));
-        keyboardRows.add(createRow("3", "3"));
-        keyboardRows.add(createRow("4", "4"));
+        keyboardRows.add(createRowWithCheck("2", "2", userSettings.getChosenCountSigns() == 2));
+        keyboardRows.add(createRowWithCheck("3", "3", userSettings.getChosenCountSigns() == 3));
+        keyboardRows.add(createRowWithCheck("4", "4", userSettings.getChosenCountSigns() == 4));
         keyboardRows.add(createRow(BACK_BUTTON, "back"));
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    public static InlineKeyboardMarkup getNotificationsSettingsKeyboard() {
+    public static InlineKeyboardMarkup getNotificationsSettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
         for (int i = 9; i <= 18; i++) {
             String time = String.format("%02d:00", i);
-            keyboardRows.add(createRow(time, time));
+            keyboardRows.add(createRowWithCheck(time, time, userSettings.getTimeForNotify() != null && userSettings.getTimeForNotify() == i));
         }
-        keyboardRows.add(createRow(OFF_NOTIFICATION_BUTTON_NAME, "Disable notifications"));
+        keyboardRows.add(createRowWithCheck(OFF_NOTIFICATION_BUTTON_NAME, "Disable notifications", userSettings.getTimeForNotify() == null));
         keyboardRows.add(createRow(BACK_BUTTON, "back"));
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
@@ -73,5 +76,10 @@ public class KeyboardFactory {
         InlineKeyboardRow row = new InlineKeyboardRow();
         row.add(button);
         return row;
+    }
+
+    private static InlineKeyboardRow createRowWithCheck(String buttonText, String callbackData, boolean isSelected) {
+        String text = isSelected ? "✅ " + buttonText : buttonText;
+        return createRow(text, callbackData);
     }
 }
