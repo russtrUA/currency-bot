@@ -57,7 +57,7 @@ public class CallbackHandler {
             case "back":
                 sendSettingsKeyboard(chatId);
                 break;
-            case "PrivatBank":
+            case "Pryvatbank":
             case "Monobank":
             case "NBU":
                 updateBankSetting(userId, callbackData, chatId, messageId, userSettings);
