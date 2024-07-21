@@ -33,7 +33,7 @@ public class KeyboardFactory {
 
     public static InlineKeyboardMarkup getBankSettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
-        keyboardRows.add(createRowWithCheck("PrivatBank", "PrivatBank", userSettings.getChosenBanks().contains(Bank.Pryvatbank)));
+        keyboardRows.add(createRowWithCheck("Pryvatbank", "Pryvatbank", userSettings.getChosenBanks().contains(Bank.Pryvatbank)));
         keyboardRows.add(createRowWithCheck("Monobank", "Monobank", userSettings.getChosenBanks().contains(Bank.Monobank)));
         keyboardRows.add(createRowWithCheck("NBU", "NBU", userSettings.getChosenBanks().contains(Bank.NBU)));
         keyboardRows.add(createRow(BACK_BUTTON, "back"));
