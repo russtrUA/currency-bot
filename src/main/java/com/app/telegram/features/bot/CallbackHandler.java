@@ -1,5 +1,6 @@
 package com.app.telegram.features.bot;
 
+import com.app.telegram.features.rate.CurrencyRateProvider;
 import com.app.telegram.features.user.UserSettings;
 import com.app.telegram.features.user.UserSettingsProvider;
 
@@ -18,10 +19,12 @@ import java.util.List;
 public class CallbackHandler {
     private final TelegramClient telegramClient;
     private final UserSettingsProvider userSettingsProvider;
+    private final CurrencyRateProvider currencyRateProvider;
 
-    public CallbackHandler(TelegramClient telegramClient) {
+    public CallbackHandler(TelegramClient telegramClient, CurrencyRateProvider currencyRateProvider) {
         this.telegramClient = telegramClient;
         this.userSettingsProvider = new UserSettingsProvider();
+        this.currencyRateProvider = new CurrencyRateProvider();
     }
 
     public void handleCallback(Update update) {
@@ -40,7 +43,7 @@ public class CallbackHandler {
                 sendMainKeyboard(chatId, "How can I help you?");
                 break;
             case "get_info":
-                // Implement info retrieval from CurrencyRateProvider
+                handleGetInfo(chatId, userSettings);
                 break;
             case "bank":
                 sendBankSettingsKeyboard(chatId, userSettings);
@@ -79,6 +82,10 @@ public class CallbackHandler {
                 }
                 break;
         }
+    }
+
+    // TODO Implement info retrieval from CurrencyRateProvider
+    private void handleGetInfo(long chatId, UserSettings userSettings) {
     }
 
     private void sendMainKeyboard(long chatId, String text) {
@@ -190,11 +197,11 @@ public class CallbackHandler {
         updateKeyboard(chatId, messageId, KeyboardFactory.getNotificationsSettingsKeyboard(userSettings));
     }
 
-    private void updateKeyboard(long chatId, int messageId, InlineKeyboardMarkup keyboard) {
+    private void updateKeyboard(long chatId, int messageId, InlineKeyboardMarkup newKeyboard) {
         EditMessageReplyMarkup editMessageReplyMarkup = EditMessageReplyMarkup.builder()
                 .chatId(chatId)
                 .messageId(messageId)
-                .replyMarkup(keyboard)
+                .replyMarkup(newKeyboard)
                 .build();
         try {
             telegramClient.execute(editMessageReplyMarkup);
