@@ -11,7 +11,6 @@ public class CurrencyRateBot implements LongPollingSingleThreadUpdateConsumer {
     private final TelegramClient telegramClient;
     private final CallbackHandler callbackHandler;
 
-
     public CurrencyRateBot(String botToken) {
         telegramClient = new OkHttpTelegramClient(botToken);
         callbackHandler = new CallbackHandler(telegramClient);
@@ -20,14 +19,14 @@ public class CurrencyRateBot implements LongPollingSingleThreadUpdateConsumer {
     @Override
     public void consume(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            long chat_id = update.getMessage().getChatId();
-            String message_text = update.getMessage().getText();
-            String user_name = update.getMessage().getFrom().getFirstName();
+            long chatId = update.getMessage().getChatId();
+            String messageText = update.getMessage().getText();
+            String userName = update.getMessage().getFrom().getFirstName();
 
-            if (message_text.equals("/start")) {
+            if (messageText.equals("/start")) {
                 SendMessage message = SendMessage.builder()
-                        .chatId(chat_id)
-                        .text("How can I help you, " + user_name + "?")
+                        .chatId(chatId)
+                        .text("How can I help you, " + userName + "?")
                         .replyMarkup(KeyboardFactory.getMainKeyboard())
                         .build();
                 try {
