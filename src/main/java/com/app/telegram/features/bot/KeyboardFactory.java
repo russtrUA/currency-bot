@@ -59,10 +59,26 @@ public class KeyboardFactory {
 
     public static InlineKeyboardMarkup getNotificationsSettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
+        List<InlineKeyboardButton> currentRow = new ArrayList<>();
+
         for (int i = 9; i <= 18; i++) {
             String time = String.format("%02d:00", i);
-            keyboardRows.add(createRowWithCheck(time, time, userSettings.getTimeForNotify() != null && userSettings.getTimeForNotify() == i));
+            InlineKeyboardButton button = InlineKeyboardButton.builder()
+                    .text(userSettings.getTimeForNotify() != null && userSettings.getTimeForNotify() == i ? CHECKED_ITEM + time : time)
+                    .callbackData(time)
+                    .build();
+            currentRow.add(button);
+
+            if (currentRow.size() == 2) {
+                keyboardRows.add(new InlineKeyboardRow(currentRow));
+                currentRow = new ArrayList<>();
+            }
         }
+
+        if (!currentRow.isEmpty()) {
+            keyboardRows.add(new InlineKeyboardRow(currentRow));
+        }
+
         keyboardRows.add(createRowWithCheck(OFF_NOTIFICATION_BUTTON_NAME, "Disable notifications", userSettings.getTimeForNotify() == null));
         keyboardRows.add(createRow(BACK_BUTTON, "back"));
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
