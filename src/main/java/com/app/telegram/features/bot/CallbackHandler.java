@@ -33,7 +33,7 @@ public class CallbackHandler {
         long userId = update.getCallbackQuery().getFrom().getId();
         int messageId = update.getCallbackQuery().getMessage().getMessageId();
 
-        UserSettings userSettings = userSettingsProvider.getUserSettings(userId);
+        UserSettings userSettings = userSettingsProvider.getAllUserSettings(userId);
 
         switch (callbackData) {
             case "settings":
@@ -168,7 +168,7 @@ public class CallbackHandler {
 
     private void updateBankSetting(long userId, String bankName, long chatId, int messageId, UserSettings userSettings) {
         userSettings.setChosenBanks(List.of(Bank.valueOf(bankName)));
-        userSettingsProvider.updateUserSettings(userId, userSettings);
+        userSettingsProvider.setUserSettingsByid(userId, userSettings);
         updateKeyboard(chatId, messageId, KeyboardFactory.getBankSettingsKeyboard(userSettings));
     }
 
@@ -181,19 +181,19 @@ public class CallbackHandler {
             currencies.add(currency);
         }
         userSettings.setChosenCurrencies(currencies);
-        userSettingsProvider.updateUserSettings(userId, userSettings);
+        userSettingsProvider.setUserSettingsByid(userId, userSettings);
         updateKeyboard(chatId, messageId, KeyboardFactory.getCurrencySettingsKeyboard(userSettings));
     }
 
     private void updateDecimalPlacesSetting(long userId, int decimalPlaces, long chatId, int messageId, UserSettings userSettings) {
         userSettings.setChosenCountSigns(decimalPlaces);
-        userSettingsProvider.updateUserSettings(userId, userSettings);
+        userSettingsProvider.setUserSettingsByid(userId, userSettings);
         updateKeyboard(chatId, messageId, KeyboardFactory.getDecimalPlacesSettingsKeyboard(userSettings));
     }
 
     private void updateNotificationTime(long userId, String time, long chatId, int messageId, UserSettings userSettings) {
         userSettings.setTimeForNotify(time != null ? Integer.parseInt(time.split(":")[0]) : null);
-        userSettingsProvider.updateUserSettings(userId, userSettings);
+        userSettingsProvider.setUserSettingsByid(userId, userSettings);
         updateKeyboard(chatId, messageId, KeyboardFactory.getNotificationsSettingsKeyboard(userSettings));
     }
 
