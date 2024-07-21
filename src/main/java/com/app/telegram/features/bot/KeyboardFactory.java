@@ -33,9 +33,9 @@ public class KeyboardFactory {
 
     public static InlineKeyboardMarkup getBankSettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
-        keyboardRows.add(createRowWithCheck("Pryvatbank", "Pryvatbank", userSettings.getChosenBanks().contains(Bank.Pryvatbank)));
-        keyboardRows.add(createRowWithCheck("Monobank", "Monobank", userSettings.getChosenBanks().contains(Bank.Monobank)));
-        keyboardRows.add(createRowWithCheck("NBU", "NBU", userSettings.getChosenBanks().contains(Bank.NBU)));
+        keyboardRows.add(createRowWithCheck("Приватбанк", "Pryvatbank", userSettings.getChosenBanks().contains(Bank.Pryvatbank)));
+        keyboardRows.add(createRowWithCheck("Монобанк", "Monobank", userSettings.getChosenBanks().contains(Bank.Monobank)));
+        keyboardRows.add(createRowWithCheck("Національний Банк України", "NBU", userSettings.getChosenBanks().contains(Bank.NBU)));
         keyboardRows.add(createRow(BACK_BUTTON, "back"));
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
@@ -79,7 +79,7 @@ public class KeyboardFactory {
     }
 
     private static InlineKeyboardRow createRowWithCheck(String buttonText, String callbackData, boolean isSelected) {
-        String text = isSelected ? "✅ " + buttonText : buttonText;
+        String text = isSelected ? CHECKED_ITEM + buttonText : buttonText;
         return createRow(text, callbackData);
     }
 }
