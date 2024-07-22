@@ -6,6 +6,8 @@ import com.app.telegram.features.user.UserSettingsProvider;
 
 import com.app.telegram.model.Bank;
 import com.app.telegram.model.Currency;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -13,27 +15,29 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CallbackHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CallbackHandler.class);
+
     private final TelegramClient telegramClient;
     private final UserSettingsProvider userSettingsProvider;
     private final CurrencyRateProvider currencyRateProvider;
 
-    public CallbackHandler(TelegramClient telegramClient, CurrencyRateProvider currencyRateProvider) {
+    public CallbackHandler(TelegramClient telegramClient) {
         this.telegramClient = telegramClient;
-        this.userSettingsProvider = new UserSettingsProvider();
-        this.currencyRateProvider = new CurrencyRateProvider();
+        this.userSettingsProvider = UserSettingsProvider.getInstance();
+        this.currencyRateProvider = CurrencyRateProvider.getInstance();
     }
 
     public void handleCallback(Update update) {
         String callbackData = update.getCallbackQuery().getData();
         long chatId = update.getCallbackQuery().getMessage().getChatId();
-        long userId = update.getCallbackQuery().getFrom().getId();
         int messageId = update.getCallbackQuery().getMessage().getMessageId();
 
-        UserSettings userSettings = userSettingsProvider.getAllUserSettings(userId);
+        UserSettings userSettings = userSettingsProvider.getUserSettingsById(chatId);
 
         switch (callbackData) {
             case "settings":
@@ -43,6 +47,7 @@ public class CallbackHandler {
                 sendMainKeyboard(chatId, "Чим я можу допомогти?");
                 break;
             case "get_info":
+                getCurrentSettings(userSettings);
                 handleGetInfo(chatId, userSettings);
                 break;
             case "bank":
@@ -60,140 +65,137 @@ public class CallbackHandler {
             case "back":
                 sendSettingsKeyboard(chatId);
                 break;
-            case "Pryvatbank":
-            case "Monobank":
-            case "NBU":
-                updateBankSetting(userId, callbackData, chatId, messageId, userSettings);
-                break;
-            case "USD":
-            case "EUR":
-                updateCurrencySetting(userId, callbackData, chatId, messageId, userSettings);
-                break;
-            case "2":
-            case "3":
-            case "4":
-                updateDecimalPlacesSetting(userId, Integer.parseInt(callbackData), chatId, messageId, userSettings);
-                break;
             default:
-                if (callbackData.matches("\\d{2}:00")) {
-                    updateNotificationTime(userId, callbackData, chatId, messageId, userSettings);
-                } else if (callbackData.equals("Disable notifications")) {
-                    updateNotificationTime(userId, null, chatId, messageId, userSettings);
-                }
+                handleDynamicCallback(callbackData, chatId, messageId, userSettings);
                 break;
         }
     }
 
-    // TODO Implement info retrieval from CurrencyRateProvider
+    private void handleDynamicCallback(String callbackData, long chatId, int messageId, UserSettings userSettings) {
+        try {
+            if (Bank.isValidBank(callbackData)) {
+                updateBankSetting(chatId, callbackData, messageId, userSettings);
+            } else if (Currency.isValidCurrency(callbackData)) {
+                updateCurrencySetting(chatId, callbackData, messageId, userSettings);
+            } else if (callbackData.matches("\\d")) {
+                updateDecimalPlacesSetting(chatId, Integer.parseInt(callbackData), messageId, userSettings);
+            } else if (callbackData.matches("\\d{2}:00")) {
+                updateNotificationTime(chatId, callbackData, messageId, userSettings);
+            } else if (callbackData.equals("Disable notifications")) {
+                updateNotificationTime(chatId, null, messageId, userSettings);
+            }
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Invalid callback data: {}", callbackData, e);
+        }
+    }
+
+    private void getCurrentSettings(UserSettings userSettings) {
+        userSettings.getChosenBanks().forEach(bank ->
+                LOGGER.info("Chosen bank: {}", bank)
+        );
+        userSettings.getChosenCurrencies().forEach(currency ->
+                LOGGER.info("Chosen currency: {}", currency)
+        );
+        LOGGER.info("Decimal places: {}", userSettings.getChosenCountSigns());
+        LOGGER.info("Notification time: {}", userSettings.getTimeForNotify() != null
+                ? userSettings.getTimeForNotify() + ":00"
+                : "Notifications disabled"
+        );
+    }
+
     private void handleGetInfo(long chatId, UserSettings userSettings) {
+        List<Currency> chosenCurrencies = userSettings.getChosenCurrencies();
+        List<Bank> chosenBanks = userSettings.getChosenBanks();
+
+        if (chosenCurrencies.isEmpty()) {
+            sendMessage(chatId, "Не обрано жодної валюти:", KeyboardFactory.getDynamicCurrencySettingsKeyboard(userSettings));
+            return;
+        }
+
+        if (chosenBanks.isEmpty()) {
+            sendMessage(chatId, "Не обрано жодного банку:", KeyboardFactory.getDynamicBankSettingsKeyboard(userSettings));
+            return;
+        }
+
+        try {
+            String ratesMessage = currencyRateProvider.getPrettyRatesByChatId(chatId);
+            sendMessage(chatId, ratesMessage, null);
+            sendMainKeyboard(chatId, "Чи бажаєте продовжити?");
+        } catch (IOException e) {
+            LOGGER.error("Error fetching rates for chatId: {}", chatId, e);
+            sendMessage(chatId, "Виникла помилка при отриманні курсів валют. Спробуйте пізніше.", null);
+        }
     }
 
     private void sendMainKeyboard(long chatId, String text) {
-        SendMessage message = SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .replyMarkup(KeyboardFactory.getMainKeyboard())
-                .build();
-        try {
-            telegramClient.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        sendMessage(chatId, text, KeyboardFactory.getMainKeyboard());
     }
 
     private void sendSettingsKeyboard(long chatId) {
-        SendMessage message = SendMessage.builder()
-                .chatId(chatId)
-                .text("Виберіть налаштування:")
-                .replyMarkup(KeyboardFactory.getSettingsKeyboard())
-                .build();
-        try {
-            telegramClient.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        sendMessage(chatId, "Виберіть налаштування:", KeyboardFactory.getSettingsKeyboard());
     }
 
     private void sendBankSettingsKeyboard(long chatId, UserSettings userSettings) {
-        SendMessage message = SendMessage.builder()
-                .chatId(chatId)
-                .text("Виберіть банк:")
-                .replyMarkup(KeyboardFactory.getBankSettingsKeyboard(userSettings))
-                .build();
-        try {
-            telegramClient.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        sendMessage(chatId, "Виберіть банк:", KeyboardFactory.getDynamicBankSettingsKeyboard(userSettings));
     }
 
     private void sendCurrencySettingsKeyboard(long chatId, UserSettings userSettings) {
-        SendMessage message = SendMessage.builder()
-                .chatId(chatId)
-                .text("Виберіть валюту:")
-                .replyMarkup(KeyboardFactory.getCurrencySettingsKeyboard(userSettings))
-                .build();
-        try {
-            telegramClient.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        sendMessage(chatId, "Виберіть валюту:", KeyboardFactory.getDynamicCurrencySettingsKeyboard(userSettings));
     }
 
     private void sendDecimalPlacesSettingsKeyboard(long chatId, UserSettings userSettings) {
-        SendMessage message = SendMessage.builder()
-                .chatId(chatId)
-                .text("Виберіть кількість знаків після коми:")
-                .replyMarkup(KeyboardFactory.getDecimalPlacesSettingsKeyboard(userSettings))
-                .build();
-        try {
-            telegramClient.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        sendMessage(chatId, "Виберіть кількість знаків після коми:", KeyboardFactory.getDecimalPlacesSettingsKeyboard(userSettings));
     }
 
     private void sendNotificationsSettingsKeyboard(long chatId, UserSettings userSettings) {
-        SendMessage message = SendMessage.builder()
-                .chatId(chatId)
-                .text("Виберіть час сповіщення:")
-                .replyMarkup(KeyboardFactory.getNotificationsSettingsKeyboard(userSettings))
-                .build();
-        try {
-            telegramClient.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        sendMessage(chatId, "Виберіть час сповіщення:", KeyboardFactory.getNotificationsSettingsKeyboard(userSettings));
     }
 
-    private void updateBankSetting(long userId, String bankName, long chatId, int messageId, UserSettings userSettings) {
-        userSettings.setChosenBanks(List.of(Bank.valueOf(bankName)));
-        userSettingsProvider.setUserSettingsByid(userId, userSettings);
-        updateKeyboard(chatId, messageId, KeyboardFactory.getBankSettingsKeyboard(userSettings));
-    }
+    private void updateBankSetting(long chatId, String bankName, int messageId, UserSettings userSettings) {
+        Bank selectedBank = Bank.valueOf(bankName);
+        List<Bank> banks = new ArrayList<>(userSettings.getChosenBanks());
 
-    private void updateCurrencySetting(long userId, String currencyName, long chatId, int messageId, UserSettings userSettings) {
-        List<Currency> currencies = new ArrayList<>(userSettings.getChosenCurrencies());
-        Currency currency = Currency.valueOf(currencyName);
-        if (currencies.contains(currency)) {
-            currencies.remove(currency);
+        if (banks.contains(selectedBank)) {
+            banks.remove(selectedBank);
+            LOGGER.info("Removed bank: {}", selectedBank);
         } else {
-            currencies.add(currency);
+            banks.add(selectedBank);
+            LOGGER.info("Added bank: {}", selectedBank);
+        }
+
+        userSettings.setChosenBanks(banks);
+        userSettingsProvider.setUserSettingsById(chatId, userSettings);
+        updateKeyboard(chatId, messageId, KeyboardFactory.getDynamicBankSettingsKeyboard(userSettings));
+    }
+
+    private void updateCurrencySetting(long chatId, String currencyName, int messageId, UserSettings userSettings) {
+        Currency selectedCurrency = Currency.valueOf(currencyName);
+        List<Currency> currencies = new ArrayList<>(userSettings.getChosenCurrencies());
+
+        if (currencies.contains(selectedCurrency)) {
+            currencies.remove(selectedCurrency);
+            LOGGER.info("Removed currency: {}", selectedCurrency);
+        } else {
+            currencies.add(selectedCurrency);
+            LOGGER.info("Added currency: {}", selectedCurrency);
         }
         userSettings.setChosenCurrencies(currencies);
-        userSettingsProvider.setUserSettingsByid(userId, userSettings);
-        updateKeyboard(chatId, messageId, KeyboardFactory.getCurrencySettingsKeyboard(userSettings));
+        userSettingsProvider.setUserSettingsById(chatId, userSettings);
+        updateKeyboard(chatId, messageId, KeyboardFactory.getDynamicCurrencySettingsKeyboard(userSettings));
     }
 
-    private void updateDecimalPlacesSetting(long userId, int decimalPlaces, long chatId, int messageId, UserSettings userSettings) {
+    private void updateDecimalPlacesSetting(long chatId, int decimalPlaces, int messageId, UserSettings userSettings) {
         userSettings.setChosenCountSigns(decimalPlaces);
-        userSettingsProvider.setUserSettingsByid(userId, userSettings);
+        LOGGER.info("Updated decimal places to: {}", decimalPlaces);
+        userSettingsProvider.setUserSettingsById(chatId, userSettings);
         updateKeyboard(chatId, messageId, KeyboardFactory.getDecimalPlacesSettingsKeyboard(userSettings));
     }
 
-    private void updateNotificationTime(long userId, String time, long chatId, int messageId, UserSettings userSettings) {
-        userSettings.setTimeForNotify(time != null ? Integer.parseInt(time.split(":")[0]) : null);
-        userSettingsProvider.setUserSettingsByid(userId, userSettings);
+    private void updateNotificationTime(long chatId, String time, int messageId, UserSettings userSettings) {
+        Integer notificationTime = time != null ? Integer.parseInt(time.split(":")[0]) : null;
+        userSettings.setTimeForNotify(notificationTime);
+        LOGGER.info("Updated notification time to: {}", notificationTime != null ? notificationTime + ":00" : "Disabled");
+        userSettingsProvider.setUserSettingsById(chatId, userSettings);
         updateKeyboard(chatId, messageId, KeyboardFactory.getNotificationsSettingsKeyboard(userSettings));
     }
 
@@ -207,6 +209,19 @@ public class CallbackHandler {
             telegramClient.execute(editMessageReplyMarkup);
         } catch (TelegramApiException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void sendMessage(long chatId, String text, InlineKeyboardMarkup replyMarkup) {
+        SendMessage message = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .replyMarkup(replyMarkup)
+                .build();
+        try {
+            telegramClient.execute(message);
+        } catch (TelegramApiException e) {
+            LOGGER.error("Error sending message to chatId {}: {}", chatId, e.getMessage(), e);
         }
     }
 }
