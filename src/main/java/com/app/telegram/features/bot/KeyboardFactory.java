@@ -31,23 +31,6 @@ public class KeyboardFactory {
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    public static InlineKeyboardMarkup getBankSettingsKeyboard(UserSettings userSettings) {
-        List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
-        keyboardRows.add(createRowWithCheck("Приватбанк", "Pryvatbank", userSettings.getChosenBanks().contains(Bank.Pryvatbank)));
-        keyboardRows.add(createRowWithCheck("Монобанк", "Monobank", userSettings.getChosenBanks().contains(Bank.Monobank)));
-        keyboardRows.add(createRowWithCheck("Національний Банк України", "NBU", userSettings.getChosenBanks().contains(Bank.NBU)));
-        keyboardRows.add(createRow(BACK_BUTTON, "back"));
-        return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
-    }
-
-    public static InlineKeyboardMarkup getCurrencySettingsKeyboard(UserSettings userSettings) {
-        List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
-        keyboardRows.add(createRowWithCheck("EUR", "EUR", userSettings.getChosenCurrencies().contains(Currency.EUR)));
-        keyboardRows.add(createRowWithCheck("USD", "USD", userSettings.getChosenCurrencies().contains(Currency.USD)));
-        keyboardRows.add(createRow(BACK_BUTTON, "back"));
-        return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
-    }
-
     public static InlineKeyboardMarkup getDecimalPlacesSettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
         keyboardRows.add(createRowWithCheck("2", "2", userSettings.getChosenCountSigns() == 2));
@@ -80,6 +63,26 @@ public class KeyboardFactory {
         }
 
         keyboardRows.add(createRowWithCheck(OFF_NOTIFICATION_BUTTON_NAME, "Disable notifications", userSettings.getTimeForNotify() == null));
+        keyboardRows.add(createRow(BACK_BUTTON, "back"));
+        return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
+    }
+
+    public static InlineKeyboardMarkup getDynamicBankSettingsKeyboard(UserSettings userSettings) {
+        List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
+        for (Bank bank : Bank.values()) {
+            boolean isSelected = userSettings.getChosenBanks().contains(bank);
+            keyboardRows.add(createRowWithCheck(bank.name(), bank.name(), isSelected));
+        }
+        keyboardRows.add(createRow(BACK_BUTTON, "back"));
+        return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
+    }
+
+    public static InlineKeyboardMarkup getDynamicCurrencySettingsKeyboard(UserSettings userSettings) {
+        List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
+        for (Currency currency : Currency.values()) {
+            boolean isSelected = userSettings.getChosenCurrencies().contains(currency);
+            keyboardRows.add(createRowWithCheck(currency.name(), currency.name(), isSelected));
+        }
         keyboardRows.add(createRow(BACK_BUTTON, "back"));
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
