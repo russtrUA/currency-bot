@@ -1,6 +1,5 @@
 package com.app.telegram.features.bot;
 
-import com.app.telegram.features.rate.CurrencyRateProvider;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -14,8 +13,7 @@ public class CurrencyRateBot implements LongPollingSingleThreadUpdateConsumer {
 
     public CurrencyRateBot(String botToken) {
         telegramClient = new OkHttpTelegramClient(botToken);
-        CurrencyRateProvider currencyRateProvider = new CurrencyRateProvider();
-        callbackHandler = new CallbackHandler(telegramClient, currencyRateProvider);
+        callbackHandler = new CallbackHandler(telegramClient);
     }
 
     @Override
