@@ -1,5 +1,6 @@
 package com.app.telegram.features.user;
 
+import com.app.telegram.features.user.storage.FileStorageService;
 import com.app.telegram.model.Bank;
 import com.app.telegram.model.Currency;
 import lombok.*;
@@ -14,13 +15,15 @@ public class UserSettings {
     private Integer chosenCountSigns;
     private List<Currency> chosenCurrencies;
     private Integer timeForNotify;
+
     public UserSettings() {
         List<Bank> defaultBankList = new ArrayList<>();
         defaultBankList.add(Bank.Pryvatbank);
-        chosenBanks = defaultBankList;
+        this.chosenBanks = defaultBankList;
         List<Currency> defaultCurrencyList = new ArrayList<>();
         defaultCurrencyList.add(Currency.USD);
-        chosenCurrencies = defaultCurrencyList;
-        chosenCountSigns = 2;
+        this.chosenCurrencies = defaultCurrencyList;
+        this.chosenCountSigns = 2;
+
     }
 }
