@@ -27,7 +27,8 @@ public class KeyboardFactory {
         keyboardRows.add(createRow(CURRENCIES_BUTTON_NAME, "currency"));
         keyboardRows.add(createRow(COUNT_SIGNS_BUTTON_NAME, "number_of_decimal_places"));
         keyboardRows.add(createRow(NOTIFICATION_BUTTON_NAME, "notifications"));
-        keyboardRows.add(createRow(BACK_TO_MAIN_BUTTON, "back_to_menu"));
+        getKeyboardBettons(keyboardRows);
+
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
@@ -36,7 +37,8 @@ public class KeyboardFactory {
         keyboardRows.add(createRowWithCheck("2", "2", userSettings.getChosenCountSigns() == 2));
         keyboardRows.add(createRowWithCheck("3", "3", userSettings.getChosenCountSigns() == 3));
         keyboardRows.add(createRowWithCheck("4", "4", userSettings.getChosenCountSigns() == 4));
-        keyboardRows.add(createRow(BACK_BUTTON, "back"));
+        getKeyboardBettons(keyboardRows);
+
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
@@ -63,7 +65,8 @@ public class KeyboardFactory {
         }
 
         keyboardRows.add(createRowWithCheck(OFF_NOTIFICATION_BUTTON_NAME, "Disable notifications", userSettings.getTimeForNotify() == null));
-        keyboardRows.add(createRow(BACK_BUTTON, "back"));
+        getKeyboardBettons(keyboardRows);
+
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
@@ -73,7 +76,8 @@ public class KeyboardFactory {
             boolean isSelected = userSettings.getChosenBanks().contains(bank);
             keyboardRows.add(createRowWithCheck(bank.name(), bank.name(), isSelected));
         }
-        keyboardRows.add(createRow(BACK_BUTTON, "back"));
+        getKeyboardBettons(keyboardRows);
+
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
@@ -83,8 +87,16 @@ public class KeyboardFactory {
             boolean isSelected = userSettings.getChosenCurrencies().contains(currency);
             keyboardRows.add(createRowWithCheck(currency.name(), currency.name(), isSelected));
         }
-        keyboardRows.add(createRow(BACK_BUTTON, "back"));
+        getKeyboardBettons(keyboardRows);
+
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
+    }
+
+    private static void getKeyboardBettons(List<InlineKeyboardRow> keyboardRows) {
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(InlineKeyboardButton.builder().text(BACK_BUTTON).callbackData("back").build());
+        row.add(InlineKeyboardButton.builder().text(RATES_BUTTON_NAME).callbackData("get_info").build());
+        keyboardRows.add(new InlineKeyboardRow(row));
     }
 
     private static InlineKeyboardRow createRow(String buttonText, String callbackData) {
