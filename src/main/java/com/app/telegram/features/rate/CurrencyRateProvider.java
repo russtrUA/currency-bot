@@ -8,9 +8,8 @@ import com.app.telegram.model.Currency;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.IOException;
 import java.util.List;
-
-import static com.app.telegram.constants.Constants.BANKS_BUTTON_NAME;
 
 public class CurrencyRateProvider {
 
@@ -30,7 +29,7 @@ public class CurrencyRateProvider {
         return currencyRateProvider;
     }
 
-    public String getPrettyRatesByChatId(long chatId) {
+    public String getPrettyRatesByChatId(long chatId) throws IOException, InterruptedException {
         UserSettingsProvider userSettingsProvider = UserSettingsProvider.getInstance();
         UserSettings userSettings = new UserSettings(userSettingsProvider.getUserSettingsById(chatId));
 
@@ -41,7 +40,7 @@ public class CurrencyRateProvider {
         StringBuilder result = new StringBuilder("Курси валют:\n");
 
         for (Bank bank : chosenBanks) {
-            result.append(BANKS_BUTTON_NAME).append(bank.name()).append("\n");
+            result.append("\uD83C\uDFE6").append(bank).append("\n");
             List<BankRateDto> ratesForBank = bankRateDtoList.stream()
                     .filter(rate -> rate.getBank() == bank && chosenCurrencies.contains(rate.getCurrency()))
                     .toList();
@@ -49,15 +48,22 @@ public class CurrencyRateProvider {
             for (Currency currency : chosenCurrencies) {
                 for (BankRateDto rate : ratesForBank) {
                     if (rate.getCurrency() == currency) {
-                        result.append(currency).append("\n")
-                                .append("Купівля: ").append(formatRate(rate.getBuyRate(), chosenCountSigns)).append("\n")
-                                .append("Продаж: ").append(formatRate(rate.getSaleRate(), chosenCountSigns)).append("\n");
+                        if (rate.getBank() == Bank.NBU) {
+                            String middleRate = formatRate(rate.getMiddleRate(), chosenCountSigns);
+                            result.append(currency).append("\n")
+                                    .append("Курс: ").append(middleRate).append("\n");
+                        } else {
+                            String buyRate = formatRate(rate.getBuyRate(), chosenCountSigns);
+                            String saleRate = formatRate(rate.getSaleRate(), chosenCountSigns);
+                            result.append(currency).append("\n")
+                                    .append("Купівля: ").append(buyRate).append("\n")
+                                    .append("Продаж: ").append(saleRate).append("\n");
+                        }
                     }
                 }
             }
             result.append("\n");
         }
-
         return result.toString();
     }
 
