@@ -1,66 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <!-- Rolling File Appender for general logs -->
-    <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>app.log</file>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %thread %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- File Appender for error logs only -->
-    <appender name="ERROR_FILE" class="ch.qos.logback.core.FileAppender">
-        <file>error.log</file>
-        <append>true</append>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %thread %logger{36} - %msg%n</pattern>
-        </encoder>
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
-        </filter>
-    </appender>
-
-    <!-- File Appender for info logs only -->
-    <appender name="INFO_FILE" class="ch.qos.logback.core.FileAppender">
-        <file>info.log</file>
-        <append>true</append>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %thread %logger{36} - %msg%n</pattern>
-        </encoder>
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>INFO</level>
-        </filter>
-    </appender>
-
-    <!-- Console Appender for development and real-time feedback -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %thread %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- Asynchronous Appender for improved performance -->
-    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="ROLLING_FILE"/>
-        <appender-ref ref="INFO_FILE"/>
-        <appender-ref ref="ERROR_FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </appender>
-
-    <!-- Logger levels for different packages -->
-    <logger name="org.telegram.telegrambots" level="info"/>
-    <logger name="com.app.telegram" level="debug"/>
-
-    <!-- Root logger configuration -->
     <root level="debug">
-        <appender-ref ref="ASYNC"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="CONSOLE"/>
     </root>
 
 </configuration>
