@@ -22,10 +22,19 @@ public enum Bank {
     @Override
     public String toString() {
         return switch (this) {
-            case Pryvatbank -> "Приватбанк";
-            case Monobank -> "Монобанк";
-            case NBU -> "Національний Банк України";
+            case Pryvatbank -> "Pryvatbank";
+            case Monobank -> "Monobank";
+            case NBU -> "NBU";
         };
     }
     public abstract String getApiUrl();
+
+    public static boolean isValidBank(String bankName) {
+        try {
+            Bank.valueOf(bankName);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
 }
