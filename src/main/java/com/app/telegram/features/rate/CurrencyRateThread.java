@@ -36,7 +36,7 @@ public class CurrencyRateThread extends Thread {
         CurrencyRateProvider.getInstance().setBankRateDtoList(aggregateBankRates());
     }
 
-    public List<BankRateDto> aggregateBankRates() throws IOException, InterruptedException {
+    private List<BankRateDto> aggregateBankRates() throws IOException, InterruptedException {
         initializeBankRateLists();
         List<BankRateDto> aggregatedRates = new ArrayList<>();
         aggregatedRates.addAll(mapPryvatBankRates(pryvatBankRateResponseDtoList));

@@ -8,7 +8,6 @@ import com.app.telegram.model.Currency;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.IOException;
 import java.util.List;
 
 public class CurrencyRateProvider {
@@ -29,7 +28,7 @@ public class CurrencyRateProvider {
         return currencyRateProvider;
     }
 
-    public String getPrettyRatesByChatId(long chatId) throws IOException, InterruptedException {
+    public String getPrettyRatesByChatId(long chatId) {
         UserSettingsProvider userSettingsProvider = UserSettingsProvider.getInstance();
         UserSettings userSettings = new UserSettings(userSettingsProvider.getUserSettingsById(chatId));
 
