@@ -37,10 +37,15 @@ public class CallbackHandler {
         long chatId = update.getCallbackQuery().getMessage().getChatId();
         int messageId = update.getCallbackQuery().getMessage().getMessageId();
 
+        LOGGER.info("Received callback: data={}, chatId={}, messageId={}", callbackData, chatId, messageId);
+
         UserSettings userSettings = userSettingsProvider.getUserSettingsById(chatId);
         if (userSettings == null) {
+            LOGGER.warn("User settings not found for chatId={}, using default settings", chatId);
             userSettings = new UserSettings();
             userSettingsProvider.setUserSettingsById(chatId, userSettings);
+        } else {
+            LOGGER.info("Loaded user settings for chatId={}", chatId);
         }
 
         switch (callbackData) {
