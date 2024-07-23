@@ -1,5 +1,8 @@
 package com.app.telegram.features.bot;
 
+import com.app.telegram.features.notification.NotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -8,12 +11,15 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 public class CurrencyRateBot implements LongPollingSingleThreadUpdateConsumer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CurrencyRateBot.class);
     private final TelegramClient telegramClient;
     private final CallbackHandler callbackHandler;
 
     public CurrencyRateBot(String botToken) {
         telegramClient = new OkHttpTelegramClient(botToken);
         callbackHandler = new CallbackHandler(telegramClient);
+        NotificationService notificationService = new NotificationService(telegramClient);
+        new Thread(notificationService).start();
     }
 
     @Override
@@ -32,7 +38,7 @@ public class CurrencyRateBot implements LongPollingSingleThreadUpdateConsumer {
                 try {
                     telegramClient.execute(message);
                 } catch (TelegramApiException e) {
-                    e.printStackTrace();
+                    LOGGER.error("Error sending /start message to chatId {}: {}", chatId, e.getMessage(), e);
                 }
             }
         } else if (update.hasCallbackQuery()) {
