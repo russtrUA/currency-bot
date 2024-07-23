@@ -38,6 +38,10 @@ public class CallbackHandler {
         int messageId = update.getCallbackQuery().getMessage().getMessageId();
 
         UserSettings userSettings = userSettingsProvider.getUserSettingsById(chatId);
+        if (userSettings == null) {
+            userSettings = new UserSettings();
+            userSettingsProvider.setUserSettingsById(chatId, userSettings);
+        }
 
         switch (callbackData) {
             case "settings":
