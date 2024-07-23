@@ -1,6 +1,5 @@
 package com.app.telegram.features.user;
 
-import com.app.telegram.features.user.storage.FileStorageService;
 import com.app.telegram.model.Bank;
 import com.app.telegram.model.Currency;
 import lombok.*;
@@ -24,6 +23,5 @@ public class UserSettings {
         defaultCurrencyList.add(Currency.USD);
         this.chosenCurrencies = defaultCurrencyList;
         this.chosenCountSigns = 2;
-
     }
 }

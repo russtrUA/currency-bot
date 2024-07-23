@@ -2,9 +2,6 @@ package com.app.telegram.features.user;
 
 import com.app.telegram.features.user.storage.FileStorageService;
 import com.app.telegram.features.user.storage.StorageService;
-import org.telegram.telegrambots.meta.api.objects.User;
-
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -15,6 +12,7 @@ public class UserSettingsProvider {
     StorageService storageService = new FileStorageService();
 
     private UserSettingsProvider() {
+
         userSettingsMap = storageService.loadSettings();
     }
 
@@ -39,8 +37,8 @@ public class UserSettingsProvider {
 
     public void setUserSettingsById(Long chatId, UserSettings userSettings) {
         this.userSettingsMap.put(chatId, userSettings);
-        FileStorageService fileStorageService = new FileStorageService();
-        fileStorageService.saveSettings(userSettingsMap);
+        storageService.saveSettings(userSettingsMap);
     }
+
 }
 
