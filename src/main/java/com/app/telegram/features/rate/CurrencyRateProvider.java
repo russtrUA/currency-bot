@@ -29,8 +29,7 @@ public class CurrencyRateProvider {
     }
 
     public String getPrettyRatesByChatId(long chatId) {
-        UserSettingsProvider userSettingsProvider = UserSettingsProvider.getInstance();
-        UserSettings userSettings = new UserSettings(userSettingsProvider.getUserSettingsById(chatId));
+        UserSettings userSettings = UserSettingsProvider.getInstance().getUserSettingsById(chatId);
 
         List<Bank> chosenBanks = userSettings.getChosenBanks();
         List<Currency> chosenCurrencies = userSettings.getChosenCurrencies();
