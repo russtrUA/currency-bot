@@ -17,16 +17,13 @@ public class UserSettings {
     @Setter
     private Integer timeForNotify;
 
-    // Конструктор за замовчуванням
     public UserSettings() {
         List<Bank> defaultBankList = new ArrayList<>();
         defaultBankList.add(Bank.Pryvatbank);
-        chosenBanks = defaultBankList;
-
+        this.chosenBanks = defaultBankList;
         List<Currency> defaultCurrencyList = new ArrayList<>();
         defaultCurrencyList.add(Currency.USD);
-        chosenCurrencies = defaultCurrencyList;
-
-        chosenCountSigns = 2;
+        this.chosenCurrencies = defaultCurrencyList;
+        this.chosenCountSigns = 2;
     }
 }
