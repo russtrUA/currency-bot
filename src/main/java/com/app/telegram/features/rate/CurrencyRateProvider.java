@@ -11,6 +11,8 @@ import lombok.Setter;
 import java.util.List;
 
 import static com.app.telegram.constants.Constants.BANK_EMOJI;
+import static com.app.telegram.constants.Constants.MONEY_WITH_WINGS;
+
 
 public class CurrencyRateProvider {
 
@@ -31,16 +33,17 @@ public class CurrencyRateProvider {
     }
 
     public String getPrettyRatesByChatId(long chatId) {
+
         UserSettings userSettings = UserSettingsProvider.getInstance().getUserSettingsById(chatId);
 
         List<Bank> chosenBanks = userSettings.getChosenBanks();
         List<Currency> chosenCurrencies = userSettings.getChosenCurrencies();
         int chosenCountSigns = userSettings.getChosenCountSigns();
 
-        StringBuilder result = new StringBuilder("Курси валют:\n");
+        StringBuilder result = new StringBuilder(MONEY_WITH_WINGS).append("<b>Поточні курси валют:</b>\n");
 
         for (Bank bank : chosenBanks) {
-            result.append(BANK_EMOJI).append(bank).append("\n");
+            result.append("\n <b>").append(BANK_EMOJI).append(bank).append("</b>\n");
             List<BankRateDto> ratesForBank = bankRateDtoList.stream()
                     .filter(rate -> rate.getBank() == bank && chosenCurrencies.contains(rate.getCurrency()))
                     .toList();
@@ -48,13 +51,12 @@ public class CurrencyRateProvider {
             for (Currency currency : chosenCurrencies) {
                 for (BankRateDto rate : ratesForBank) {
                     if (rate.getCurrency() == currency) {
+                        result.append("<b>").append(currency).append("/UAH").append("</b>\n");
                         if (rate.getMiddleRate() != null) {
-                            result.append(currency).append("\n")
-                                    .append("  Курс: ").append(formatRate(rate.getMiddleRate(), chosenCountSigns)).append("\n");
+                            result.append("  Курс: ").append(formatRate(rate.getMiddleRate(), chosenCountSigns)).append("\n");
                         }
                         if (rate.getBuyRate() != null) {
-                            result.append(currency).append("\n")
-                                    .append("  Купівля: ").append(formatRate(rate.getBuyRate(), chosenCountSigns)).append("\n");
+                            result.append("  Купівля: ").append(formatRate(rate.getBuyRate(), chosenCountSigns)).append("\n");
                         }
                         if (rate.getSaleRate() != null) {
                             result.append("  Продаж: ").append(formatRate(rate.getSaleRate(), chosenCountSigns)).append("\n");
@@ -62,7 +64,6 @@ public class CurrencyRateProvider {
                     }
                 }
             }
-            result.append("\n");
         }
         return result.toString();
     }
