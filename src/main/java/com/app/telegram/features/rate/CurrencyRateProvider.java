@@ -30,8 +30,9 @@ public class CurrencyRateProvider {
         return currencyRateProvider;
     }
 
-    public String getPrettyRatesByChatId(long chatId) {
+    public String getPrettyRatesByChatId() {
         UserSettings userSettings = UserSettingsProvider.getInstance().getUserSettingsById(chatId);
+
         List<Bank> chosenBanks = userSettings.getChosenBanks();
         List<Currency> chosenCurrencies = userSettings.getChosenCurrencies();
         int chosenCountSigns = userSettings.getChosenCountSigns();
@@ -56,8 +57,7 @@ public class CurrencyRateProvider {
                                     .append("Купівля: ").append(formatRate(rate.getBuyRate(), chosenCountSigns)).append("\n");
                         }
                         if (rate.getSaleRate() != null) {
-                            result.append(currency).append("\n")
-                                    .append("Продаж: ").append(formatRate(rate.getSaleRate(), chosenCountSigns)).append("\n");
+                            result.append("Продаж: ").append(formatRate(rate.getSaleRate(), chosenCountSigns)).append("\n");
                         }
                     }
                 }
