@@ -28,4 +28,13 @@ public enum Bank {
         };
     }
     public abstract String getApiUrl();
+
+    public static boolean isValidBank(String bankName) {
+        try {
+            Bank.valueOf(bankName);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
 }
