@@ -78,7 +78,7 @@ public class KeyboardFactory {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
         for (Bank bank : Bank.values()) {
             boolean isSelected = userSettings.getChosenBanks().contains(bank);
-            keyboardRows.add(createRowWithCheck(bank.name(), bank.name(), isSelected));
+            keyboardRows.add(createRowWithCheck(bank.toString(), bank.name(), isSelected));
         }
         getKeyboardBettons(keyboardRows);
 

@@ -126,14 +126,10 @@ public class CallbackHandler {
             return;
         }
 
-        try {
+
             String ratesMessage = currencyRateProvider.getPrettyRatesByChatId(chatId);
             sendMessage(chatId, ratesMessage, null);
             sendMainKeyboard(chatId, "Чи бажаєте продовжити?");
-        } catch (IOException e) {
-            LOGGER.error("Error fetching rates for chatId: {}", chatId, e);
-            sendMessage(chatId, "Виникла помилка при отриманні курсів валют. Спробуйте пізніше.", null);
-        }
     }
 
     private void sendMainKeyboard(long chatId, String text) {
