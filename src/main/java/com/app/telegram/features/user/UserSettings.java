@@ -14,13 +14,14 @@ public class UserSettings {
     private Integer chosenCountSigns;
     private List<Currency> chosenCurrencies;
     private Integer timeForNotify;
+
     public UserSettings() {
         List<Bank> defaultBankList = new ArrayList<>();
         defaultBankList.add(Bank.Pryvatbank);
-        chosenBanks = defaultBankList;
+        this.chosenBanks = defaultBankList;
         List<Currency> defaultCurrencyList = new ArrayList<>();
         defaultCurrencyList.add(Currency.USD);
-        chosenCurrencies = defaultCurrencyList;
-        chosenCountSigns = 2;
+        this.chosenCurrencies = defaultCurrencyList;
+        this.chosenCountSigns = 2;
     }
 }
