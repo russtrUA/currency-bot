@@ -22,9 +22,9 @@ public enum Bank {
     @Override
     public String toString() {
         return switch (this) {
-            case Pryvatbank -> "Pryvatbank";
-            case Monobank -> "Monobank";
-            case NBU -> "NBU";
+            case Pryvatbank -> "Приватбанк";
+            case Monobank -> "Монобанк";
+            case NBU -> "Національний Банк України";
         };
     }
     public abstract String getApiUrl();

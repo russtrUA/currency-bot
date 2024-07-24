@@ -27,7 +27,11 @@ public class KeyboardFactory {
         keyboardRows.add(createRow(CURRENCIES_BUTTON_NAME, "currency"));
         keyboardRows.add(createRow(COUNT_SIGNS_BUTTON_NAME, "number_of_decimal_places"));
         keyboardRows.add(createRow(NOTIFICATION_BUTTON_NAME, "notifications"));
-        getKeyboardBettons(keyboardRows);
+
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(InlineKeyboardButton.builder().text(BACK_TO_MAIN_BUTTON).callbackData("back_to_menu").build());
+        row.add(InlineKeyboardButton.builder().text(RATES_BUTTON_NAME).callbackData("get_info").build());
+        keyboardRows.add(new InlineKeyboardRow(row));
 
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
