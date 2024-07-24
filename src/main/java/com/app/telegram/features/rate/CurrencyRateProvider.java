@@ -10,6 +10,8 @@ import lombok.Setter;
 
 import java.util.List;
 
+import static com.app.telegram.constants.Constants.BANK_EMOJI;
+
 public class CurrencyRateProvider {
 
     private static CurrencyRateProvider currencyRateProvider;
@@ -30,7 +32,6 @@ public class CurrencyRateProvider {
 
     public String getPrettyRatesByChatId(long chatId) {
         UserSettings userSettings = UserSettingsProvider.getInstance().getUserSettingsById(chatId);
-
         List<Bank> chosenBanks = userSettings.getChosenBanks();
         List<Currency> chosenCurrencies = userSettings.getChosenCurrencies();
         int chosenCountSigns = userSettings.getChosenCountSigns();
@@ -38,7 +39,7 @@ public class CurrencyRateProvider {
         StringBuilder result = new StringBuilder("Курси валют:\n");
 
         for (Bank bank : chosenBanks) {
-            result.append("\uD83C\uDFE6").append(bank).append("\n");
+            result.append(BANK_EMOJI).append(bank).append("\n");
             List<BankRateDto> ratesForBank = bankRateDtoList.stream()
                     .filter(rate -> rate.getBank() == bank && chosenCurrencies.contains(rate.getCurrency()))
                     .toList();
@@ -46,16 +47,17 @@ public class CurrencyRateProvider {
             for (Currency currency : chosenCurrencies) {
                 for (BankRateDto rate : ratesForBank) {
                     if (rate.getCurrency() == currency) {
-                        if (rate.getBank() == Bank.NBU) {
-                            String middleRate = formatRate(rate.getMiddleRate(), chosenCountSigns);
+                        if (rate.getMiddleRate() != null) {
                             result.append(currency).append("\n")
-                                    .append("Курс: ").append(middleRate).append("\n");
-                        } else {
-                            String buyRate = formatRate(rate.getBuyRate(), chosenCountSigns);
-                            String saleRate = formatRate(rate.getSaleRate(), chosenCountSigns);
+                                    .append("Курс: ").append(formatRate(rate.getMiddleRate(), chosenCountSigns)).append("\n");
+                        }
+                        if (rate.getBuyRate() != null) {
                             result.append(currency).append("\n")
-                                    .append("Купівля: ").append(buyRate).append("\n")
-                                    .append("Продаж: ").append(saleRate).append("\n");
+                                    .append("Купівля: ").append(formatRate(rate.getBuyRate(), chosenCountSigns)).append("\n");
+                        }
+                        if (rate.getSaleRate() != null) {
+                            result.append(currency).append("\n")
+                                    .append("Продаж: ").append(formatRate(rate.getSaleRate(), chosenCountSigns)).append("\n");
                         }
                     }
                 }
