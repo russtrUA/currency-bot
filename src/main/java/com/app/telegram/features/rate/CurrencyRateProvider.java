@@ -30,7 +30,7 @@ public class CurrencyRateProvider {
         return currencyRateProvider;
     }
 
-    public String getPrettyRatesByChatId() {
+    public String getPrettyRatesByChatId(long chatId) {
         UserSettings userSettings = UserSettingsProvider.getInstance().getUserSettingsById(chatId);
 
         List<Bank> chosenBanks = userSettings.getChosenBanks();
