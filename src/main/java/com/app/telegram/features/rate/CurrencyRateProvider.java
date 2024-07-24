@@ -50,14 +50,14 @@ public class CurrencyRateProvider {
                     if (rate.getCurrency() == currency) {
                         if (rate.getMiddleRate() != null) {
                             result.append(currency).append("\n")
-                                    .append("Курс: ").append(formatRate(rate.getMiddleRate(), chosenCountSigns)).append("\n");
+                                    .append("  Курс: ").append(formatRate(rate.getMiddleRate(), chosenCountSigns)).append("\n");
                         }
                         if (rate.getBuyRate() != null) {
                             result.append(currency).append("\n")
-                                    .append("Купівля: ").append(formatRate(rate.getBuyRate(), chosenCountSigns)).append("\n");
+                                    .append("  Купівля: ").append(formatRate(rate.getBuyRate(), chosenCountSigns)).append("\n");
                         }
                         if (rate.getSaleRate() != null) {
-                            result.append("Продаж: ").append(formatRate(rate.getSaleRate(), chosenCountSigns)).append("\n");
+                            result.append("  Продаж: ").append(formatRate(rate.getSaleRate(), chosenCountSigns)).append("\n");
                         }
                     }
                 }
