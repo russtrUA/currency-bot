@@ -51,7 +51,7 @@ public class CurrencyRateProvider {
             for (Currency currency : chosenCurrencies) {
                 for (BankRateDto rate : ratesForBank) {
                     if (rate.getCurrency() == currency) {
-                        result.append("<b>").append(currency).append("/UAH").append("</b>\n");
+                        result.append("<b>").append(currency).append("=>UAH").append("</b>\n");
                         if (rate.getMiddleRate() != null) {
                             result.append("  Курс: ").append(formatRate(rate.getMiddleRate(), chosenCountSigns)).append("\n");
                         }
