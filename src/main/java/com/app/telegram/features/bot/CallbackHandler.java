@@ -3,11 +3,11 @@ package com.app.telegram.features.bot;
 import com.app.telegram.features.rate.CurrencyRateProvider;
 import com.app.telegram.features.user.UserSettings;
 import com.app.telegram.features.user.UserSettingsProvider;
-
 import com.app.telegram.model.Bank;
 import com.app.telegram.model.Currency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -15,7 +15,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -127,9 +126,9 @@ public class CallbackHandler {
         }
 
 
-            String ratesMessage = currencyRateProvider.getPrettyRatesByChatId(chatId);
-            sendMessage(chatId, ratesMessage, null);
-            sendMainKeyboard(chatId, "Чи бажаєте продовжити?");
+        String ratesMessage = currencyRateProvider.getPrettyRatesByChatId(chatId);
+        sendMessage(chatId, ratesMessage, null);
+        sendMainKeyboard(chatId, "Чи бажаєте продовжити?");
     }
 
     private void sendMainKeyboard(long chatId, String text) {
@@ -221,6 +220,7 @@ public class CallbackHandler {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
+                .parseMode(ParseMode.HTML)
                 .replyMarkup(replyMarkup)
                 .build();
         try {

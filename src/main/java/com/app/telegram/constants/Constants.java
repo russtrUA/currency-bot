@@ -15,4 +15,5 @@ public class Constants {
     public static final String CHOSE_TIME_TO_NOTIFY = "Оберіть годину для сповіщень";
     public static final String BANK_EMOJI = "\uD83C\uDFE6 ";
     public static final String BACK_TO_MAIN_BUTTON = "\uD83D\uDD19 Назад до меню";
+    public static final String MONEY_WITH_WINGS = "\uD83D\uDCB8";
 }
