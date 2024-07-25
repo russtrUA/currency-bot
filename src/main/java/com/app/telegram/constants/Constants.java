@@ -1,7 +1,7 @@
 package com.app.telegram.constants;
 
 public class Constants {
-    public static final String BOT_TOKEN = System.getenv("BOT_TOKEN");
+    public static final String BOT_TOKEN = "7336782424:AAG0dAct44-HBLDhhHkVr1JiH7XXuQWNmNU";
     public static final String RATES_BUTTON_NAME = "\uD83D\uDCB2 Курси валют";
     public static final String SETTINGS_BUTTON_NAME = "⚙ Налаштування";
     public static final String BANKS_BUTTON_NAME = "\uD83C\uDFE6 Банки";

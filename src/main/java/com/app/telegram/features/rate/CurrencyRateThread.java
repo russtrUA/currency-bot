@@ -8,19 +8,16 @@ import com.app.telegram.model.Bank;
 import com.app.telegram.model.Currency;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.http.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.app.telegram.model.Currency.getCurrencyByCode;
 import static com.app.telegram.model.Currency.isValidCurrency;
+
 
 public class CurrencyRateThread extends Thread {
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -29,11 +26,13 @@ public class CurrencyRateThread extends Thread {
     private List<MonoBankRateResponseDto> monobankRateResponseDtoList;
     private List<NbuRateResponseDto> nbuRateResponseDtoList;
 
-
-    @SneakyThrows
     @Override
     public void run() {
-        CurrencyRateProvider.getInstance().setBankRateDtoList(aggregateBankRates());
+        try {
+            CurrencyRateProvider.getInstance().setBankRateDtoList(aggregateBankRates());
+        } catch (InterruptedException | IOException ex) {
+            throw new RuntimeException();
+        }
     }
 
     private List<BankRateDto> aggregateBankRates() throws IOException, InterruptedException {
@@ -99,11 +98,3 @@ public class CurrencyRateThread extends Thread {
         return objectMapper.readValue(response.body(), typeReference);
     }
 }
-
-
-
-
-
-
-
-

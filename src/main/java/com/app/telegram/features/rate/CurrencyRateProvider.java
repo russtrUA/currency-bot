@@ -12,17 +12,28 @@ import java.util.List;
 
 import static com.app.telegram.constants.Constants.BANK_EMOJI;
 
+/**
+ * Клас, що надає курси валют для користувачів бота Telegram.
+ */
+@Setter
+@Getter
 public class CurrencyRateProvider {
 
     private static CurrencyRateProvider currencyRateProvider;
-    @Getter
-    @Setter
     private List<BankRateDto> bankRateDtoList;
 
+    /**
+     * Приватний конструктор для запобігання створення екземплярів класу.
+     */
     private CurrencyRateProvider() {
 
     }
 
+    /**
+     * Повертає екземпляр класу `CurrencyRateProvider`.
+     *
+     * @return екземпляр класу `CurrencyRateProvider`
+     */
     public static CurrencyRateProvider getInstance() {
         if (currencyRateProvider == null) {
             currencyRateProvider = new CurrencyRateProvider();
@@ -30,6 +41,12 @@ public class CurrencyRateProvider {
         return currencyRateProvider;
     }
 
+    /**
+     * Повертає відформатований рядок з курсами валют для заданого користувача.
+     *
+     * @param chatId ID чату користувача
+     * @return відформатований рядок з курсами валют
+     */
     public String getPrettyRatesByChatId(long chatId) {
         UserSettings userSettings = UserSettingsProvider.getInstance().getUserSettingsById(chatId);
 
@@ -67,6 +84,13 @@ public class CurrencyRateProvider {
         return result.toString();
     }
 
+    /**
+     * Форматує курс валют з заданою кількістю знаків після коми.
+     *
+     * @param rate курс валют
+     * @param signs кількість знаків після коми
+     * @return відформатований курс валют
+     */
     private String formatRate(Double rate, int signs) {
         if (rate == null) {
             return "N/A";
@@ -74,5 +98,3 @@ public class CurrencyRateProvider {
         return String.format("%." + signs + "f", rate);
     }
 }
-
-

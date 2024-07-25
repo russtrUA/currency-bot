@@ -1,52 +1,69 @@
 package com.app.telegram.features.notification;
 
 import com.app.telegram.features.user.UserSettings;
+import com.app.telegram.features.user.UserSettingsProvider;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.*;
 import java.util.concurrent.*;
 
-import static java.util.concurrent.TimeUnit.*;
-
-/**
- * Клас NotificationScheduler використовується для планування та відправки
- * сповіщень користувачам у певний час. Він забезпечує реєстрацію користувачів,
- * оновлення часу сповіщення, скасування сповіщень та управління списками користувачів.
- */
 public class NotificationScheduler {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
-    protected final Map<Integer, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
-    protected final Map<Integer, List<UserSettings>> usersByHour = new HashMap<>();
+    private final Map<Integer, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
+    private final Map<Integer, List<UserSettings>> usersByHour = new HashMap<>();
+    private final NotificationService notificationService;
+    private final UserSettingsProvider userSettingsProvider;
 
-    /**
-     * Ініціалізує новий екземпляр NotificationScheduler, створюючи пусти
-     * списки користувачів для кожної години з 9 до 18.
-     */
-    public NotificationScheduler() {
+    public NotificationScheduler(TelegramClient telegramClient) {
+        this.notificationService = new NotificationService(telegramClient);
+        this.userSettingsProvider = UserSettingsProvider.getInstance();
+
         for (int hour = 9; hour <= 18; hour++) {
             usersByHour.put(hour, new ArrayList<>());
         }
+
+        loadUsersForNotifications();
+
+        scheduleAllNotifications();
     }
 
-    /**
-     * Планує завдання для відправки сповіщень у певну годину.
-     *
-     * @param hour Година, на яку потрібно запланувати сповіщення.
-     */
+    private void loadUsersForNotifications() {
+        userSettingsProvider.getAllUserSettings().forEach((chatId, userSettings) -> {
+            if (userSettings == null) {
+                return;
+            }
+            Integer hour = userSettings.getTimeForNotify();
+            if (hour != null) {
+                addUserToHour(userSettings, hour);
+                System.out.println("Loaded user for notification at hour " + hour + ": " + chatId);  // Додано логування
+            }
+        });
+    }
+
+    private void scheduleAllNotifications() {
+        for (int hour : usersByHour.keySet()) {
+            if (!usersByHour.get(hour).isEmpty()) {
+                scheduleNotification(hour);
+            }
+        }
+    }
+
     public void scheduleNotification(int hour) {
         long initialDelay = calculateInitialDelay(hour);
-        ScheduledFuture<?> scheduledTask = scheduler.scheduleAtFixedRate(() -> sendNotifications(hour), initialDelay, 1, DAYS);
+        ScheduledFuture<?> scheduledTask = scheduler.schedule(
+                () -> sendAndRescheduleNotification(hour),
+                initialDelay,
+                TimeUnit.MILLISECONDS
+        );
         scheduledTasks.put(hour, scheduledTask);
+        System.out.println("Scheduled notification for hour: " + hour);  // Додано логування
     }
 
-    /**
-     * Оновлює час сповіщення для зареєстрованого користувача.
-     *
-     * @param user Об'єкт UserSettings, який потрібно оновити.
-     * @param newHour Нова година для отримання сповіщень.
-     */
     public void updateNotificationTime(UserSettings user, int newHour) {
-        int oldHour = user.getTimeForNotify();
-        removeUserFromHour(user, oldHour);
+        Integer oldHour = user.getTimeForNotify();
+        if (oldHour != null) {
+            removeUserFromHour(user, oldHour);
+        }
         user.setTimeForNotify(newHour);
         addUserToHour(user, newHour);
 
@@ -55,74 +72,36 @@ public class NotificationScheduler {
         }
     }
 
-    /**
-     * Видаляє користувача зі списку користувачів для певної години.
-     *
-     * @param user Об'єкт UserSettings, який потрібно видалити.
-     * @param hour Година, з якої потрібно видалити користувача.
-     */
-    protected void removeUserFromHour(UserSettings user, int hour) {
+    private void removeUserFromHour(UserSettings user, int hour) {
         List<UserSettings> users = usersByHour.get(hour);
         if (users != null) {
             users.remove(user);
         }
     }
 
-    /**
-     * Додає користувача до списку користувачів для певної години.
-     *
-     * @param user Об'єкт UserSettings, який потрібно додати.
-     * @param hour Година, до якої потрібно додати користувача.
-     */
-    protected void addUserToHour(UserSettings user, int hour) {
+    private void addUserToHour(UserSettings user, int hour) {
         List<UserSettings> users = usersByHour.get(hour);
         if (users != null) {
             users.add(user);
+            System.out.println("Added user to hour " + hour + ": " + user.getChatId());  // Додано логування
         }
     }
 
-    /**
-     * Скасовує сповіщення для певної години.
-     *
-     * @param hour Година, для якої потрібно скасувати сповіщення.
-     */
-    public void cancelNotification(int hour) {
-        ScheduledFuture<?> scheduledTask = scheduledTasks.get(hour);
-        if (scheduledTask != null) {
-            scheduledTask.cancel(true);
-            scheduledTasks.remove(hour);
-        }
+    private void sendAndRescheduleNotification(int hour) {
+        sendNotifications(hour);
+        scheduleNotification(hour);
     }
 
-    /**
-     * Відправляє сповіщення всім користувачам, які зареєстровані на отримання сповіщень
-     * у певну годину.
-     *
-     * @param hour Година, для якої потрібно відправити сповіщення.
-     */
     private void sendNotifications(int hour) {
         List<UserSettings> users = usersByHour.get(hour);
+        System.out.println("Sending notifications for hour: " + hour);  // Додано логування
         for (UserSettings user : users) {
-            sendNotification(user);
+            System.out.println("Sending notification to user: " + user.getChatId());  // Додано логування
+            notificationService.sendNotification(user);
         }
     }
 
-    /**
-     * Відправляє сповіщення користувачеві.
-     *
-     * @param user Об'єкт UserSettings, який отримує сповіщення.
-     */
-    private void sendNotification(UserSettings user) {
-
-    }
-
-    /**
-     * Обчислює початкову затримку до цільової години.
-     *
-     * @param targetHour Цільова година для сповіщення.
-     * @return Початкова затримка в мілісекундах.
-     */
-    protected long calculateInitialDelay(int targetHour) {
+    long calculateInitialDelay(int targetHour) {
         Calendar current = Calendar.getInstance();
 
         Calendar target = (Calendar) current.clone();
@@ -138,17 +117,20 @@ public class NotificationScheduler {
         return target.getTimeInMillis() - current.getTimeInMillis();
     }
 
-    /**
-     * Реєструє користувача для отримання сповіщень у певну годину.
-     *
-     * @param user Об'єкт UserSettings, який містить налаштування користувача для отримання сповіщень.
-     */
     public void registerUser(UserSettings user) {
         int hour = user.getTimeForNotify();
         usersByHour.get(hour).add(user);
 
         if (!scheduledTasks.containsKey(hour)) {
             scheduleNotification(hour);
+        }
+    }
+
+    public void sendDailyNotifications() {
+        Calendar current = Calendar.getInstance();
+        int hour = current.get(Calendar.HOUR_OF_DAY);
+        if (usersByHour.containsKey(hour)) {
+            sendNotifications(hour);
         }
     }
 }

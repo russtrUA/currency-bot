@@ -1,6 +1,6 @@
 package com.app.telegram.features.bot;
 
-import com.app.telegram.features.notification.NotificationService;
+import com.app.telegram.features.notification.NotificationScheduler;
 import com.app.telegram.features.rate.CurrencyRateThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +15,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Клас для управління ботом Telegram, який обробляє оновлення та запити користувачів.
+ */
 public class CurrencyRateBot implements LongPollingSingleThreadUpdateConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(CurrencyRateBot.class);
     private final TelegramClient telegramClient;
@@ -23,13 +26,14 @@ public class CurrencyRateBot implements LongPollingSingleThreadUpdateConsumer {
     public CurrencyRateBot(String botToken) {
         telegramClient = new OkHttpTelegramClient(botToken);
         callbackHandler = new CallbackHandler(telegramClient);
+        NotificationScheduler notificationScheduler = new NotificationScheduler(telegramClient);
 
         CurrencyRateThread currencyRateThread = new CurrencyRateThread();
-//        NotificationService notificationService = new NotificationService(telegramClient);
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
         scheduler.scheduleAtFixedRate(currencyRateThread, 0, 10, TimeUnit.MINUTES);
-//        scheduler.scheduleAtFixedRate(notificationService, 0, 10, TimeUnit.MINUTES);  // We can adjust the period as needed
+
+        scheduler.scheduleAtFixedRate(notificationScheduler::sendDailyNotifications, 0, 1, TimeUnit.MINUTES);
     }
 
     @Override

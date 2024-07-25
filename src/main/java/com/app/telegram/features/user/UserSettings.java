@@ -11,6 +11,7 @@ import java.util.*;
 @AllArgsConstructor
 @Getter
 public class UserSettings {
+    private Long chatId;
     private List<Bank> chosenBanks;
     private Integer chosenCountSigns;
     private List<Currency> chosenCurrencies;
@@ -25,5 +26,7 @@ public class UserSettings {
         defaultCurrencyList.add(Currency.USD);
         this.chosenCurrencies = defaultCurrencyList;
         this.chosenCountSigns = 2;
+        this.timeForNotify = 9;
     }
+
 }
