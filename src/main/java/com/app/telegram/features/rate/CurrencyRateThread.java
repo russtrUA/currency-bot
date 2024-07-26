@@ -17,6 +17,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.app.telegram.model.Currency.getCurrencyByCode;
@@ -28,6 +29,7 @@ public class CurrencyRateThread extends Thread {
     private List<PryvatBankRateResponseDto> pryvatBankRateResponseDtoList;
     private List<MonoBankRateResponseDto> monobankRateResponseDtoList;
     private List<NbuRateResponseDto> nbuRateResponseDtoList;
+    private final Map<Bank, Integer> bankResponseStatuses = CurrencyRateProvider.getInstance().getBankResponseStatuses();
 
 
     @SneakyThrows
@@ -96,6 +98,10 @@ public class CurrencyRateThread extends Thread {
                 .GET()
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        bankResponseStatuses.put(bank, response.statusCode());
+        if (response.statusCode() != 200) {
+            return objectMapper.readValue("[]", typeReference);
+        }
         return objectMapper.readValue(response.body(), typeReference);
     }
 }

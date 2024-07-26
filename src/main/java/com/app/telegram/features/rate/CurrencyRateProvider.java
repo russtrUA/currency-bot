@@ -8,7 +8,9 @@ import com.app.telegram.model.Currency;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.app.telegram.constants.Constants.BANK_EMOJI;
 import static com.app.telegram.constants.Constants.MONEY_WITH_WINGS;
@@ -20,6 +22,7 @@ public class CurrencyRateProvider {
 
     private static CurrencyRateProvider currencyRateProvider;
     private List<BankRateDto> bankRateDtoList;
+    private final Map<Bank, Integer> bankResponseStatuses = new HashMap<>();
 
     private CurrencyRateProvider() {
 
@@ -47,7 +50,10 @@ public class CurrencyRateProvider {
             List<BankRateDto> ratesForBank = bankRateDtoList.stream()
                     .filter(rate -> rate.getBank() == bank && chosenCurrencies.contains(rate.getCurrency()))
                     .toList();
-
+            if (ratesForBank.isEmpty())
+                if (bankResponseStatuses.get(bank) != 200)
+                    result.append("Технічні проблеми на стороні банку.\nСпробуйте через 10 хвилин\n");
+                else result.append("Для даного банку по вибраним \nвалютам курси не знайдено\n");
             for (Currency currency : chosenCurrencies) {
                 for (BankRateDto rate : ratesForBank) {
                     if (rate.getCurrency() == currency) {
