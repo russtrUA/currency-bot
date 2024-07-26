@@ -10,18 +10,10 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Клас для збереження та завантаження налаштувань користувачів у файл.
- */
 public class FileStorageService implements StorageService {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * Зберігає налаштування користувачів у файл.
-     *
-     * @param userSettings налаштування користувачів
-     */
     @Override
     public void saveSettings(ConcurrentHashMap<Long, UserSettings> userSettings) {
         try {
@@ -31,11 +23,6 @@ public class FileStorageService implements StorageService {
         }
     }
 
-    /**
-     * Завантажує налаштування користувачів з файлу.
-     *
-     * @return налаштування користувачів
-     */
     @Override
     public ConcurrentHashMap<Long, UserSettings> loadSettings() {
         File settingsFile = Paths.get(Constants.USER_SETTINGS_FILE).toFile();

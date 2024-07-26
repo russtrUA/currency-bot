@@ -1,14 +1,14 @@
 package com.app.telegram.features.bot;
 
-import com.app.telegram.features.notification.NotificationScheduler;
+import com.app.telegram.features.notification.NotificationService;
 import com.app.telegram.features.rate.CurrencyRateProvider;
 import com.app.telegram.features.user.UserSettings;
 import com.app.telegram.features.user.UserSettingsProvider;
-
 import com.app.telegram.model.Bank;
 import com.app.telegram.model.Currency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -19,34 +19,21 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Клас для обробки callback-запитів у Telegram боті.
- */
 public class CallbackHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CallbackHandler.class);
 
     private final TelegramClient telegramClient;
     private final UserSettingsProvider userSettingsProvider;
     private final CurrencyRateProvider currencyRateProvider;
-    private final NotificationScheduler notificationScheduler;
+    private final NotificationService notificationService;
 
-    /**
-     * Конструктор, який ініціалізує основні компоненти.
-     *
-     * @param telegramClient клієнт Telegram
-     */
     public CallbackHandler(TelegramClient telegramClient) {
         this.telegramClient = telegramClient;
         this.userSettingsProvider = UserSettingsProvider.getInstance();
         this.currencyRateProvider = CurrencyRateProvider.getInstance();
-        this.notificationScheduler = new NotificationScheduler(telegramClient);
+        this.notificationService = new NotificationService(telegramClient);
     }
 
-    /**
-     * Обробляє callback-запити.
-     *
-     * @param update оновлення з інформацією про callback-запит
-     */
     public void handleCallback(Update update) {
         String callbackData = update.getCallbackQuery().getData();
         long chatId = update.getCallbackQuery().getMessage().getChatId();
@@ -58,13 +45,14 @@ public class CallbackHandler {
         if (userSettings == null) {
             LOGGER.warn("User settings not found for chatId={}, using default settings", chatId);
             userSettings = new UserSettings();
+            userSettings.setChatId(chatId);
             userSettingsProvider.setUserSettingsById(chatId, userSettings);
         } else {
             LOGGER.info("Loaded user settings for chatId={}", chatId);
         }
 
         switch (callbackData) {
-            case "settings", "back":
+            case "settings":
                 sendSettingsKeyboard(chatId);
                 break;
             case "back_to_menu":
@@ -86,20 +74,15 @@ public class CallbackHandler {
             case "notifications":
                 sendNotificationsSettingsKeyboard(chatId, userSettings);
                 break;
+            case "back":
+                sendSettingsKeyboard(chatId);
+                break;
             default:
                 handleDynamicCallback(callbackData, chatId, messageId, userSettings);
                 break;
         }
     }
 
-    /**
-     * Обробляє динамічні callback-запити.
-     *
-     * @param callbackData дані callback-запиту
-     * @param chatId ID чату
-     * @param messageId ID повідомлення
-     * @param userSettings налаштування користувача
-     */
     private void handleDynamicCallback(String callbackData, long chatId, int messageId, UserSettings userSettings) {
         try {
             if (Bank.isValidBank(callbackData)) {
@@ -118,11 +101,6 @@ public class CallbackHandler {
         }
     }
 
-    /**
-     * Отримує поточні налаштування користувача.
-     *
-     * @param userSettings налаштування користувача
-     */
     private void getCurrentSettings(UserSettings userSettings) {
         userSettings.getChosenBanks().forEach(bank ->
                 LOGGER.info("Chosen bank: {}", bank)
@@ -137,12 +115,6 @@ public class CallbackHandler {
         );
     }
 
-    /**
-     * Обробляє запит на отримання інформації про поточні налаштування.
-     *
-     * @param chatId ID чату
-     * @param userSettings налаштування користувача
-     */
     private void handleGetInfo(long chatId, UserSettings userSettings) {
         List<Currency> chosenCurrencies = userSettings.getChosenCurrencies();
         List<Bank> chosenBanks = userSettings.getChosenBanks();
@@ -162,73 +134,30 @@ public class CallbackHandler {
         sendMainKeyboard(chatId, "Чи бажаєте продовжити?");
     }
 
-    /**
-     * Надсилає головне меню.
-     *
-     * @param chatId ID чату
-     * @param text текст повідомлення
-     */
     private void sendMainKeyboard(long chatId, String text) {
         sendMessage(chatId, text, KeyboardFactory.getMainKeyboard());
     }
 
-    /**
-     * Надсилає меню налаштувань.
-     *
-     * @param chatId ID чату
-     */
     private void sendSettingsKeyboard(long chatId) {
         sendMessage(chatId, "Виберіть налаштування:", KeyboardFactory.getSettingsKeyboard());
     }
 
-    /**
-     * Надсилає меню налаштувань банків.
-     *
-     * @param chatId ID чату
-     * @param userSettings налаштування користувача
-     */
     private void sendBankSettingsKeyboard(long chatId, UserSettings userSettings) {
         sendMessage(chatId, "Виберіть банк:", KeyboardFactory.getDynamicBankSettingsKeyboard(userSettings));
     }
 
-    /**
-     * Надсилає меню налаштувань валют.
-     *
-     * @param chatId ID чату
-     * @param userSettings налаштування користувача
-     */
     private void sendCurrencySettingsKeyboard(long chatId, UserSettings userSettings) {
         sendMessage(chatId, "Виберіть валюту:", KeyboardFactory.getDynamicCurrencySettingsKeyboard(userSettings));
     }
 
-    /**
-     * Надсилає меню налаштувань кількості знаків після коми.
-     *
-     * @param chatId ID чату
-     * @param userSettings налаштування користувача
-     */
     private void sendDecimalPlacesSettingsKeyboard(long chatId, UserSettings userSettings) {
         sendMessage(chatId, "Виберіть кількість знаків після коми:", KeyboardFactory.getDecimalPlacesSettingsKeyboard(userSettings));
     }
 
-    /**
-     * Надсилає меню налаштувань часу сповіщень.
-     *
-     * @param chatId ID чату
-     * @param userSettings налаштування користувача
-     */
     private void sendNotificationsSettingsKeyboard(long chatId, UserSettings userSettings) {
         sendMessage(chatId, "Виберіть час сповіщення:", KeyboardFactory.getNotificationsSettingsKeyboard(userSettings));
     }
 
-    /**
-     * Оновлює налаштування банків.
-     *
-     * @param chatId ID чату
-     * @param bankName назва банку
-     * @param messageId ID повідомлення
-     * @param userSettings налаштування користувача
-     */
     private void updateBankSetting(long chatId, String bankName, int messageId, UserSettings userSettings) {
         Bank selectedBank = Bank.valueOf(bankName);
         List<Bank> banks = new ArrayList<>(userSettings.getChosenBanks());
@@ -246,14 +175,6 @@ public class CallbackHandler {
         updateKeyboard(chatId, messageId, KeyboardFactory.getDynamicBankSettingsKeyboard(userSettings));
     }
 
-    /**
-     * Оновлює налаштування валют.
-     *
-     * @param chatId ID чату
-     * @param currencyName назва валюти
-     * @param messageId ID повідомлення
-     * @param userSettings налаштування користувача
-     */
     private void updateCurrencySetting(long chatId, String currencyName, int messageId, UserSettings userSettings) {
         Currency selectedCurrency = Currency.valueOf(currencyName);
         List<Currency> currencies = new ArrayList<>(userSettings.getChosenCurrencies());
@@ -270,14 +191,6 @@ public class CallbackHandler {
         updateKeyboard(chatId, messageId, KeyboardFactory.getDynamicCurrencySettingsKeyboard(userSettings));
     }
 
-    /**
-     * Оновлює налаштування кількості знаків після коми.
-     *
-     * @param chatId ID чату
-     * @param decimalPlaces кількість знаків після коми
-     * @param messageId ID повідомлення
-     * @param userSettings налаштування користувача
-     */
     private void updateDecimalPlacesSetting(long chatId, int decimalPlaces, int messageId, UserSettings userSettings) {
         userSettings.setChosenCountSigns(decimalPlaces);
         LOGGER.info("Updated decimal places to: {}", decimalPlaces);
@@ -285,33 +198,19 @@ public class CallbackHandler {
         updateKeyboard(chatId, messageId, KeyboardFactory.getDecimalPlacesSettingsKeyboard(userSettings));
     }
 
-    /**
-     * Оновлює налаштування часу сповіщень.
-     *
-     * @param chatId ID чату
-     * @param time час сповіщення у форматі "HH:00"
-     * @param messageId ID повідомлення
-     * @param userSettings налаштування користувача
-     */
     private void updateNotificationTime(long chatId, String time, int messageId, UserSettings userSettings) {
         Integer notificationTime = time != null ? Integer.parseInt(time.split(":")[0]) : null;
+        if (notificationTime != null) {
+            notificationService.updateUserNotificationTime(userSettings, notificationTime);
+        } else {
+            notificationService.removeUser(userSettings, userSettings.getTimeForNotify());
+        }
         userSettings.setTimeForNotify(notificationTime);
         LOGGER.info("Updated notification time to: {}", notificationTime != null ? notificationTime + ":00" : "Disabled");
         userSettingsProvider.setUserSettingsById(chatId, userSettings);
         updateKeyboard(chatId, messageId, KeyboardFactory.getNotificationsSettingsKeyboard(userSettings));
-        if (notificationTime != null) {
-            notificationScheduler.updateNotificationTime(userSettings, notificationTime);
-            LOGGER.info("Notification time updated in scheduler for chatId: {}", chatId);
-        }
     }
 
-    /**
-     * Оновлює клавіатуру повідомлення.
-     *
-     * @param chatId ID чату
-     * @param messageId ID повідомлення
-     * @param newKeyboard нова клавіатура
-     */
     private void updateKeyboard(long chatId, int messageId, InlineKeyboardMarkup newKeyboard) {
         EditMessageReplyMarkup editMessageReplyMarkup = EditMessageReplyMarkup.builder()
                 .chatId(chatId)
@@ -325,17 +224,11 @@ public class CallbackHandler {
         }
     }
 
-    /**
-     * Надсилає повідомлення.
-     *
-     * @param chatId ID чату
-     * @param text текст повідомлення
-     * @param replyMarkup клавіатура для відповіді (може бути null)
-     */
     private void sendMessage(long chatId, String text, InlineKeyboardMarkup replyMarkup) {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
+                .parseMode(ParseMode.HTML)
                 .replyMarkup(replyMarkup)
                 .build();
         try {

@@ -12,16 +12,8 @@ import java.util.List;
 
 import static com.app.telegram.constants.Constants.*;
 
-/**
- * Клас для створення клавіатур для Telegram бота.
- */
 public class KeyboardFactory {
 
-    /**
-     * Створює головну клавіатуру.
-     *
-     * @return головна клавіатура
-     */
     public static InlineKeyboardMarkup getMainKeyboard() {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
         keyboardRows.add(createRow(RATES_BUTTON_NAME, "get_info"));
@@ -29,11 +21,6 @@ public class KeyboardFactory {
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    /**
-     * Створює клавіатуру налаштувань.
-     *
-     * @return клавіатура налаштувань
-     */
     public static InlineKeyboardMarkup getSettingsKeyboard() {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
         keyboardRows.add(createRow(BANKS_BUTTON_NAME, "bank"));
@@ -49,12 +36,6 @@ public class KeyboardFactory {
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    /**
-     * Створює клавіатуру налаштувань кількості знаків після коми.
-     *
-     * @param userSettings налаштування користувача
-     * @return клавіатура налаштувань кількості знаків після коми
-     */
     public static InlineKeyboardMarkup getDecimalPlacesSettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
         keyboardRows.add(createRowWithCheck("2", "2", userSettings.getChosenCountSigns() == 2));
@@ -65,12 +46,6 @@ public class KeyboardFactory {
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    /**
-     * Створює клавіатуру налаштувань часу сповіщень.
-     *
-     * @param userSettings налаштування користувача
-     * @return клавіатура налаштувань часу сповіщень
-     */
     public static InlineKeyboardMarkup getNotificationsSettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
         List<InlineKeyboardButton> currentRow = new ArrayList<>();
@@ -99,12 +74,6 @@ public class KeyboardFactory {
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    /**
-     * Створює динамічну клавіатуру налаштувань банків.
-     *
-     * @param userSettings налаштування користувача
-     * @return динамічна клавіатура налаштувань банків
-     */
     public static InlineKeyboardMarkup getDynamicBankSettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
         for (Bank bank : Bank.values()) {
@@ -116,12 +85,6 @@ public class KeyboardFactory {
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    /**
-     * Створює динамічну клавіатуру налаштувань валют.
-     *
-     * @param userSettings налаштування користувача
-     * @return динамічна клавіатура налаштувань валют
-     */
     public static InlineKeyboardMarkup getDynamicCurrencySettingsKeyboard(UserSettings userSettings) {
         List<InlineKeyboardRow> keyboardRows = new ArrayList<>();
         for (Currency currency : Currency.values()) {
@@ -133,11 +96,6 @@ public class KeyboardFactory {
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    /**
-     * Додає кнопки "Назад" і "Отримати інформацію" до клавіатури.
-     *
-     * @param keyboardRows список рядків клавіатури
-     */
     private static void getKeyboardButtons(List<InlineKeyboardRow> keyboardRows) {
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(InlineKeyboardButton.builder().text(BACK_BUTTON).callbackData("back").build());
@@ -145,13 +103,6 @@ public class KeyboardFactory {
         keyboardRows.add(new InlineKeyboardRow(row));
     }
 
-    /**
-     * Створює рядок клавіатури з однією кнопкою.
-     *
-     * @param buttonText текст кнопки
-     * @param callbackData callback-дані для кнопки
-     * @return рядок клавіатури
-     */
     private static InlineKeyboardRow createRow(String buttonText, String callbackData) {
         InlineKeyboardButton button = InlineKeyboardButton.builder()
                 .text(buttonText)
@@ -162,14 +113,6 @@ public class KeyboardFactory {
         return row;
     }
 
-    /**
-     * Створює рядок клавіатури з однією кнопкою та позначкою вибору.
-     *
-     * @param buttonText текст кнопки
-     * @param callbackData callback-дані для кнопки
-     * @param isSelected чи вибрана кнопка
-     * @return рядок клавіатури
-     */
     private static InlineKeyboardRow createRowWithCheck(String buttonText, String callbackData, boolean isSelected) {
         String text = isSelected ? CHECKED_ITEM + buttonText : buttonText;
         return createRow(text, callbackData);

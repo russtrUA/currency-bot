@@ -15,7 +15,6 @@ public class UserSettings {
     private List<Bank> chosenBanks;
     private Integer chosenCountSigns;
     private List<Currency> chosenCurrencies;
-    @Setter
     private Integer timeForNotify;
 
     public UserSettings() {
@@ -26,7 +25,5 @@ public class UserSettings {
         defaultCurrencyList.add(Currency.USD);
         this.chosenCurrencies = defaultCurrencyList;
         this.chosenCountSigns = 2;
-        this.timeForNotify = 9;
     }
-
 }
