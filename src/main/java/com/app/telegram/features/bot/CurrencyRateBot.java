@@ -1,5 +1,6 @@
 package com.app.telegram.features.bot;
 
+import com.app.telegram.features.notification.NotificationService;
 import com.app.telegram.features.rate.CurrencyRateThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +25,11 @@ public class CurrencyRateBot implements LongPollingSingleThreadUpdateConsumer {
         callbackHandler = new CallbackHandler(telegramClient);
 
         CurrencyRateThread currencyRateThread = new CurrencyRateThread();
-//        NotificationService notificationService = new NotificationService(telegramClient);
+        NotificationService notificationService = new NotificationService(telegramClient);
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
         scheduler.scheduleAtFixedRate(currencyRateThread, 0, 10, TimeUnit.MINUTES);
-//        scheduler.scheduleAtFixedRate(notificationService, 0, 10, TimeUnit.MINUTES);  // We can adjust the period as needed
+        scheduler.scheduleAtFixedRate(notificationService, 0, 10, TimeUnit.MINUTES);
     }
 
     @Override

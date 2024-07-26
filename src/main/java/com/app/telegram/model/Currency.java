@@ -30,6 +30,7 @@ public enum Currency {
             return false;
         }
     }
+
     public static boolean isValidCurrency(int currencyCode) {
         for (Currency currency : Currency.values()) {
             if (currency.getCode() == currencyCode) {

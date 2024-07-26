@@ -1,6 +1,5 @@
 package com.app.telegram.features.bot;
 
-import com.app.telegram.features.notification.NotificationService;
 import com.app.telegram.features.rate.CurrencyRateProvider;
 import com.app.telegram.features.user.UserSettings;
 import com.app.telegram.features.user.UserSettingsProvider;
@@ -25,13 +24,11 @@ public class CallbackHandler {
     private final TelegramClient telegramClient;
     private final UserSettingsProvider userSettingsProvider;
     private final CurrencyRateProvider currencyRateProvider;
-    private final NotificationService notificationService;
 
     public CallbackHandler(TelegramClient telegramClient) {
         this.telegramClient = telegramClient;
         this.userSettingsProvider = UserSettingsProvider.getInstance();
         this.currencyRateProvider = CurrencyRateProvider.getInstance();
-        this.notificationService = new NotificationService(telegramClient);
     }
 
     public void handleCallback(Update update) {
@@ -45,7 +42,6 @@ public class CallbackHandler {
         if (userSettings == null) {
             LOGGER.warn("User settings not found for chatId={}, using default settings", chatId);
             userSettings = new UserSettings();
-            userSettings.setChatId(chatId);
             userSettingsProvider.setUserSettingsById(chatId, userSettings);
         } else {
             LOGGER.info("Loaded user settings for chatId={}", chatId);
@@ -129,6 +125,7 @@ public class CallbackHandler {
             return;
         }
 
+
         String ratesMessage = currencyRateProvider.getPrettyRatesByChatId(chatId);
         sendMessage(chatId, ratesMessage, null);
         sendMainKeyboard(chatId, "Чи бажаєте продовжити?");
@@ -200,11 +197,6 @@ public class CallbackHandler {
 
     private void updateNotificationTime(long chatId, String time, int messageId, UserSettings userSettings) {
         Integer notificationTime = time != null ? Integer.parseInt(time.split(":")[0]) : null;
-        if (notificationTime != null) {
-            notificationService.updateUserNotificationTime(userSettings, notificationTime);
-        } else {
-            notificationService.removeUser(userSettings, userSettings.getTimeForNotify());
-        }
         userSettings.setTimeForNotify(notificationTime);
         LOGGER.info("Updated notification time to: {}", notificationTime != null ? notificationTime + ":00" : "Disabled");
         userSettingsProvider.setUserSettingsById(chatId, userSettings);
