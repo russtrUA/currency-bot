@@ -127,8 +127,7 @@ public class CallbackHandler {
 
 
         String ratesMessage = currencyRateProvider.getPrettyRatesByChatId(chatId);
-        sendMessage(chatId, ratesMessage, null);
-        sendMainKeyboard(chatId, "Чи бажаєте продовжити?");
+        sendMessage(chatId, ratesMessage, KeyboardFactory.getMainKeyboard());
     }
 
     private void sendMainKeyboard(long chatId, String text) {
