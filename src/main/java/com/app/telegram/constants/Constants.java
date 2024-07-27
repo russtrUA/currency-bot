@@ -18,5 +18,6 @@ public class Constants {
     public static final String MONEY_WITH_WINGS = "\uD83D\uDCB8";
     public static final String WARNING_EMOJI = "\u26A0\uFE0F";
     public static final String HOURGLASS_EMOJI = "\u23F3";
-    public static final String MAGNIFYING_GLASS_EMOJI = "🔍";
+    public static final String MAGNIFYING_GLASS_EMOJI = "\uD83D\uDD0D";
+    public static final String CONVERSION_ICON = "\uD83D\uDD04";
 }
