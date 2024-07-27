@@ -7,11 +7,15 @@ This repository contains the implementation of a Telegram bot that provides curr
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
 - [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Design of a Bot](#design-of-a-bot)
 - [User Settings](#user-settings)
 - [Storage Service](#storage-service)
 - [Adding a New Bank](#adding-a-new-bank)
 - [Adding a New Currency](#adding-a-new-currency)
+- [Notification Service](#notification-service)
 - [Adventages of Using Threads](#advantages-of-using-threads)
+- [Additional information](#additional-information)
 
 ## Getting Started
 
@@ -24,27 +28,17 @@ This repository contains the implementation of a Telegram bot that provides curr
 
 1. Clone the repository:
 
-    ```sh
-    git clone https://github.com/yourusername/telegram-currency-rate-bot.git
-    cd telegram-currency-rate-bot
-    ```
-
+    ```sh  
+    git clone git@github.com:russtrUA/currency-bot.git
+    cd currency-bot
+    ```  
 2. Install the dependencies:
 
-    ```sh
-    mvn install
-    ```
-
-### Running the Bot
-
-1. Set the `BOT_TOKEN` environment variable:
-
-    ```sh
-    export BOT_TOKEN=your_telegram_bot_token
-    ```
-
-2. Start the bot:
-
+    ```sh  
+    mvn install  
+    ```  
+   
+3. [Create Your Own Bot](#create-your-own-bot)
 
 ## Configuration
 
@@ -54,72 +48,114 @@ The bot token must be set as an environment variable. This is a security measure
 
 On Linux or macOS, use:
 
-```sh
+```sh  
 export BOT_TOKEN=your_telegram_bot_token
-```
-
-On Windows, use:
-
-```shell
+```  
+  
+On Windows, use:  
+  
+```shell  
 setx BOT_TOKEN your_telegram_bot_token
-```
+```  
+  
+## Usage  
+### Starting the Bot  
 
-## Usage
-### Starting the Bot
-To start the bot, simply run the `main` method in `AppLauncher`.
+To start the bot, simply run the `main` method in `AppLauncher`.  
+### Telegram Bot Commands  
+- `/start`: Initiates the bot and displays a welcome message.  
+- Other commands and callback queries are handled to provide current exchange rates, user settings, and notifications.  
 
-### Bot Commands
-`/start`: Initiates the bot and displays a welcome message.
-Other commands and callback queries are handled to provide current exchange rates, user settings, and notifications.
+## Project Structure
 
-## User settings
+The project is organized into the following packages:
 
-User settings can be stored in a JSON file and updated once the user clicks on a specific button. If the user doesn't choose any settings, default settings will be applied. The `UserSettingsProvider` class handles loading and saving these settings using the `StorageService` interface.
+- **`com.app.telegram.features.bot`**: Contains the bot implementation and command handling.
+- **`com.app.telegram.features.user`**: Contains user settings management.
+- **`com.app.telegram.features.rate`**: Contains the currency rate fetching logic.
+- **`com.app.telegram.features.notification`**: Contains the notification service.
+- **`com.app.telegram.model`**: Contains the data models for banks and currencies.
 
-## Storage Service
-The `StorageService` interface allows for the implementation of alternative storage options. Currently, the `FileStorageService `class is provided, which stores settings in a JSON file. Alternatives could include:
+## Design of a Bot
+Currency Rate Bot provides users with up-to-date currency rates and various customization options via a conversational interface. The design chosen for the Bot gives following advantages:
+- All callback queries are managed through the `handleCallback` method, simplifying the extension and maintenance of callback logic.
+- `CallbackHandler` utilizes helper methods for updating settings and sending keyboards, promoting code reuse and modularity. 
+- By fetching and updating user settings dynamically, the handler ensures that the user's preferences are always considered. 
+- By using a `ScheduledExecutorService`, the bot efficiently handles periodic tasks like fetching currency rates and sending notifications without blocking the main thread.
+- Bot delegates specific tasks to specialized classes (`CurrencyRateThread` for rate fetching and `NotificationService` for notifications), enhancing maintainability.
+- The `KeyboardFactory` class provides methods to create various inline keyboards used for user interactions. These keyboards are used to navigate settings, choose banks, select currencies, and manage notification settings.
 
-### Alternative Storage:
-Using an SQL or NoSQL database to store user settings.
-Cloud Storage: Storing settings in a cloud service like AWS S3 or Google Cloud Storage.
-Using Threads and Scheduler
-The bot uses threads and a scheduler for handling background tasks:
+## User settings  
+  
+User settings can be stored in a JSON file and updated once the user clicks on a specific button. If the user doesn't choose any settings, default settings will be applied.
+- The `UserSettingsProvider` class handles loading and saving these settings using the `StorageService` interface. 
+- Settings are loaded from storage during initialization, allowing the bot to resume with the same settings as before a shutdown.
+- `UserSettingsProvider` provides default settings for new users and also allows users to customize their settings, which are dynamically fetched and updated.
+- Implementation of singleton pattern ensures that only one instance of `UserSettingsProvider` exists, preventing issues related to multiple instances and providing a consistent state across the application.
+- `UserSettingsProvider` uses a `ConcurrentHashMap` to manage user settings, enabling efficient and thread-safe access and modifications.
+- User settings automatically saved to a persistent storage (`FileStorageService`) whenever they are updated, ensuring that settings are not lost between application restarts. 
+  
+## Storage Service  
 
-## Adding a New Bank
-To add a new bank to the bot, follow these steps:
-1. **Update the Bank Enum**: Add a new entry in the Bank enum in `com/app/telegram/model/Bank.java`
-2. **Implement Bank Rate Mapping**: Update the `CurrencyRateThread` class to handle the response from the new bank API. Add a method to parse and map the new bank's response to the `BankRateDto` objects.
-3. **Fetch Bank Rates**: In the `initializeBankRateLists` method, fetch the rates from the new bank.
-4. **Aggregate Bank Rates**: In the `aggregateBankRates` method, add the new bank rates to the list.
+The `StorageService` interface allows for the implementation of alternative storage options. Currently, the `FileStorageService `class is provided, which stores settings in a JSON file. Alternatives could include:  
+- **Database Storage**: Using an SQL or NoSQL database to store user settings.
+- **Cloud Storage**: Storing settings in a cloud service like AWS S3 or Google Cloud Storage.
 
-## Adding a New Currency
-To add a new currency, update the Currency enum in Currency.java with the new currency's details. For example:
+## Adding a New Bank  
 
-```Java
-public enum Currency {
-    EUR(978),
-    GBP(826),
-    USD(840),
-    // Add new currency
-    JPY(392);
+To add a new bank to the bot, follow these steps:  
+1. **Update the Bank Enum**: Add a new entry in the Bank enum in `com/app/telegram/model/Bank.java`  
+2. **Implement Bank Rate Mapping**: Update the `CurrencyRateThread` class to handle the response from the new bank API. Add a method to parse and map the new bank's response to the `BankRateDto` objects.  
+3. **Fetch Bank Rates**: In the `initializeBankRateLists` method, fetch the rates from the new bank.  
+4. **Aggregate Bank Rates**: In the `aggregateBankRates` method, add the new bank rates to the list.  
+  
+## Adding a New Currency  
+To add a new currency, update the `Currency` enum in `Currency.java` with the new currency's details. For example:  
+  
+```Java  
+public enum Currency {  
+    EUR(978),    GBP(826),    USD(840),    // Add new currency    JPY(392);  
+    // Other methods...}  
+```  
+## Notification Service
 
-    // Other methods...
-}
-```
+The `NotificationService` class handles sending notifications to users at specified times. Users can set their preferred notification times in the settings. Here are some advantages of the chosen implementation:
+- By using a `ScheduledExecutorService` with a thread pool, the notification service can handle multiple user notifications concurrently without performance degradation. 
+- The method `calcDelay` ensures that notifications are scheduled accurately based on the user's preferred time, allowing for efficient and timely delivery of messages. 
+- The use of a thread pool allows the application to manage multiple notification tasks simultaneously, ensuring that each user receives their notifications without delays.
 
 ## Advantages of Using Threads
+
 1. **Concurrency**: Allows multiple tasks to run concurrently, improving performance.
 2. **Responsiveness**: Keeps the application responsive by offloading time-consuming tasks to separate threads.
 
 ### Scheduler for CurrencyRateThread
 The scheduler is used to periodically fetch and update currency rates:
 
-```Java
+```Java  
 ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 scheduler.scheduleAtFixedRate(currencyRateThread, 0, 10, TimeUnit.MINUTES);
-```
+scheduler.scheduleAtFixedRate(notificationService, 0, 10, TimeUnit.MINUTES);
+```  
 
 #### Advantages:
 
 1. **Regular Updates**: Ensures the currency rates are updated at fixed intervals (every 10 minutes in this case).
 2. **Automated Execution**: Automatically handles the execution of the task without manual intervention.
+
+## Additional information:
+
+### Create Your Own Bot
+
+To create your own Telegram bot, follow these steps:
+
+1. **Create a Bot on Telegram**:
+
+   - Open Telegram and search for "BotFather".
+   - Start a chat with BotFather and follow the instructions to create a new bot. You will receive a bot token.
+2. **Set Up Your Bot**:
+
+   - Set the `BOT_TOKEN` environment variable with the token you received from BotFather.
+   - Customize the bot's functionality as needed.
+
+For more detailed instructions, refer to the Telegram Bot [API documentation](https://core.telegram.org/bots/api).
