@@ -82,7 +82,7 @@ Currency Rate Bot provides users with up-to-date currency rates and various cust
 - `CallbackHandler` utilizes helper methods for updating settings and sending keyboards, promoting code reuse and modularity. 
 - By fetching and updating user settings dynamically, the handler ensures that the user's preferences are always considered. 
 - By using a `ScheduledExecutorService`, the bot efficiently handles periodic tasks like fetching currency rates and sending notifications without blocking the main thread.
-- Bot delegates specific tasks to specialized classes (`CurrencyRateThread` for rate fetching and `NotificationService` for notifications), enhancing maintainability.
+- The bot delegates specific tasks to specialized classes (`CurrencyRateThread` for rate fetching and `NotificationService` for notifications), enhancing maintainability.
 - The `KeyboardFactory` class provides methods to create various inline keyboards used for user interactions. These keyboards are used to navigate settings, choose banks, select currencies, and manage notification settings.
 
 ## User settings  
@@ -93,7 +93,7 @@ User settings can be stored in a JSON file and updated once the user clicks on a
 - `UserSettingsProvider` provides default settings for new users and also allows users to customize their settings, which are dynamically fetched and updated.
 - Implementation of singleton pattern ensures that only one instance of `UserSettingsProvider` exists, preventing issues related to multiple instances and providing a consistent state across the application.
 - `UserSettingsProvider` uses a `ConcurrentHashMap` to manage user settings, enabling efficient and thread-safe access and modifications.
-- User settings automatically saved to a persistent storage (`FileStorageService`) whenever they are updated, ensuring that settings are not lost between application restarts. 
+- User settings are automatically saved to a persistent storage (`FileStorageService`) whenever they are updated, ensuring that settings are not lost between application restarts. 
   
 ## Storage Service  
 
@@ -114,8 +114,13 @@ To add a new currency, update the `Currency` enum in `Currency.java` with the ne
   
 ```Java  
 public enum Currency {  
-    EUR(978),    GBP(826),    USD(840),    // Add new currency    JPY(392);  
-    // Other methods...}  
+    EUR(978),
+    GBP(826),
+    USD(840),
+    // Add new currency
+    JPY(392)  
+    // Other methods...
+}  
 ```  
 ## Notification Service
 
