@@ -7,6 +7,7 @@ public enum Currency {
     EUR(978),
     GBP(826),
     USD(840);
+
     private final int code;
 
     Currency(int code) {
@@ -30,6 +31,7 @@ public enum Currency {
             return false;
         }
     }
+
     public static boolean isValidCurrency(int currencyCode) {
         for (Currency currency : Currency.values()) {
             if (currency.getCode() == currencyCode) {
