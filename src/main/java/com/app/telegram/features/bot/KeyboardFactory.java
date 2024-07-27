@@ -41,7 +41,7 @@ public class KeyboardFactory {
         keyboardRows.add(createRowWithCheck("2", "2", userSettings.getChosenCountSigns() == 2));
         keyboardRows.add(createRowWithCheck("3", "3", userSettings.getChosenCountSigns() == 3));
         keyboardRows.add(createRowWithCheck("4", "4", userSettings.getChosenCountSigns() == 4));
-        getKeyboardBettons(keyboardRows);
+        getKeyboardButtons(keyboardRows);
 
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
@@ -69,7 +69,7 @@ public class KeyboardFactory {
         }
 
         keyboardRows.add(createRowWithCheck(OFF_NOTIFICATION_BUTTON_NAME, "Disable notifications", userSettings.getTimeForNotify() == null));
-        getKeyboardBettons(keyboardRows);
+        getKeyboardButtons(keyboardRows);
 
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
@@ -80,7 +80,7 @@ public class KeyboardFactory {
             boolean isSelected = userSettings.getChosenBanks().contains(bank);
             keyboardRows.add(createRowWithCheck(bank.toString(), bank.name(), isSelected));
         }
-        getKeyboardBettons(keyboardRows);
+        getKeyboardButtons(keyboardRows);
 
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
@@ -91,12 +91,12 @@ public class KeyboardFactory {
             boolean isSelected = userSettings.getChosenCurrencies().contains(currency);
             keyboardRows.add(createRowWithCheck(currency.name(), currency.name(), isSelected));
         }
-        getKeyboardBettons(keyboardRows);
+        getKeyboardButtons(keyboardRows);
 
         return InlineKeyboardMarkup.builder().keyboard(keyboardRows).build();
     }
 
-    private static void getKeyboardBettons(List<InlineKeyboardRow> keyboardRows) {
+    private static void getKeyboardButtons(List<InlineKeyboardRow> keyboardRows) {
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(InlineKeyboardButton.builder().text(BACK_BUTTON).callbackData("back").build());
         row.add(InlineKeyboardButton.builder().text(RATES_BUTTON_NAME).callbackData("get_info").build());

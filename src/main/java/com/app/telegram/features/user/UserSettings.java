@@ -9,6 +9,7 @@ import java.util.*;
 @Data
 @Builder
 @AllArgsConstructor
+@Getter
 public class UserSettings {
     private List<Bank> chosenBanks;
     private Integer chosenCountSigns;

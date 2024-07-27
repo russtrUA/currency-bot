@@ -48,7 +48,7 @@ public class CallbackHandler {
         }
 
         switch (callbackData) {
-            case "settings":
+            case "settings", "back":
                 sendSettingsKeyboard(chatId);
                 break;
             case "back_to_menu":
@@ -69,9 +69,6 @@ public class CallbackHandler {
                 break;
             case "notifications":
                 sendNotificationsSettingsKeyboard(chatId, userSettings);
-                break;
-            case "back":
-                sendSettingsKeyboard(chatId);
                 break;
             default:
                 handleDynamicCallback(callbackData, chatId, messageId, userSettings);
@@ -124,7 +121,6 @@ public class CallbackHandler {
             sendMessage(chatId, "Не обрано жодного банку:", KeyboardFactory.getDynamicBankSettingsKeyboard(userSettings));
             return;
         }
-
 
         String ratesMessage = currencyRateProvider.getPrettyRatesByChatId(chatId);
         sendMessage(chatId, ratesMessage, KeyboardFactory.getMainKeyboard());
