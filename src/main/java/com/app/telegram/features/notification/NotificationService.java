@@ -19,11 +19,9 @@ import java.util.concurrent.*;
 public class NotificationService extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
     private final TelegramClient telegramClient;
-    private final ScheduledExecutorService scheduledExecutorService;
 
     public NotificationService(TelegramClient telegramClient) {
         this.telegramClient = telegramClient;
-        this.scheduledExecutorService = Executors.newScheduledThreadPool(10);
     }
 
     @Override
@@ -32,15 +30,11 @@ public class NotificationService extends Thread {
     }
 
     private void startNotificationService() {
-        ConcurrentHashMap<Long, UserSettings> userSettings = UserSettingsProvider.getInstance().getAllUserSettings();
-        userSettings.forEach((chatId, settings) -> {
-            Integer notificationHour = settings.getTimeForNotify();
-            if (notificationHour != null) {
-                long delay = calcDelay(notificationHour);
-                scheduledExecutorService.scheduleAtFixedRate(
-                        () -> sendNotification(chatId), delay, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
-            }
-        });
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        for (int i = 9; i <= 18; i++) {
+            int hour = i;
+            scheduledExecutorService.scheduleAtFixedRate(() -> sendNotification(hour), calcDelay(i), TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
+        }
     }
 
     private long calcDelay(int hour) {
@@ -56,21 +50,27 @@ public class NotificationService extends Thread {
         return ++delay;
     }
 
-    private void sendNotification(Long chatId) {
+    private void sendNotification(int hour) {
+        ConcurrentHashMap<Long, UserSettings> userSettings = UserSettingsProvider.getInstance().getAllUserSettings();
         CurrencyRateProvider rateProvider = CurrencyRateProvider.getInstance();
-        String messageText = rateProvider.getPrettyRatesByChatId(chatId);
-        SendMessage message = SendMessage
-                .builder()
-                .chatId(chatId.toString())
-                .parseMode(ParseMode.HTML)
-                .replyMarkup(KeyboardFactory.getMainKeyboard())
-                .text(messageText)
-                .build();
-        try {
-            telegramClient.execute(message);
-            logger.info("Notification sent to user: {}", chatId);
-        } catch (TelegramApiException e) {
-            logger.error("Failed to send notification to user: {}", chatId, e);
-        }
+        userSettings.entrySet().stream()
+                .filter(entry -> entry.getValue().getTimeForNotify() != null)
+                .filter(entry -> entry.getValue().getTimeForNotify() == hour)
+                .forEach(entry -> {
+                    String messageText = rateProvider.getPrettyRatesByChatId(entry.getKey());
+                    SendMessage message = SendMessage
+                            .builder()
+                            .chatId(entry.getKey())
+                            .parseMode(ParseMode.HTML)
+                            .replyMarkup(KeyboardFactory.getMainKeyboard())
+                            .text(messageText)
+                            .build();
+                    try {
+                        telegramClient.execute(message);
+                        logger.info("Notification sent to user: {}", entry.getKey());
+                    } catch (TelegramApiException e) {
+                        logger.error("Failed to send notification to user: {}", entry.getKey(), e);
+                    }
+                });
     }
 }
