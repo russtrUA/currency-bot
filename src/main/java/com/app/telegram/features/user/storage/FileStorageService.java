@@ -10,16 +10,20 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class FileStorageService implements StorageService {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
 
     @Override
     public void saveSettings(ConcurrentHashMap<Long, UserSettings> userSettings) {
         try {
             objectMapper.writeValue(new File(Constants.USER_SETTINGS_FILE), userSettings);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to save user settings", e);
+            LOGGER.error("Неможливо зберегти налаштування користувача", e);
         }
     }
 
@@ -33,9 +37,11 @@ public class FileStorageService implements StorageService {
             return defaultSettings;
         } else {
             try {
-                return objectMapper.readValue(settingsFile, new TypeReference<>() {});
+                return objectMapper.readValue(settingsFile, new TypeReference<>() {
+                });
             } catch (IOException e) {
-                throw new RuntimeException("Failed to load user settings", e);
+                LOGGER.error("Неможливо завантажити налаштування користувача", e);
+                return new ConcurrentHashMap<>();
             }
         }
     }
