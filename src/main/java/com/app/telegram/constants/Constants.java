@@ -15,4 +15,8 @@ public class Constants {
     public static final String BANK_EMOJI = "\uD83C\uDFE6 ";
     public static final String BACK_TO_MAIN_BUTTON = "\uD83D\uDD19 Назад до меню";
     public static final String MONEY_WITH_WINGS = "\uD83D\uDCB8";
+    public static final String WARNING_EMOJI = "⚠️";
+    public static final String HOURGLASS_EMOJI = "⏳";
+    public static final String MAGNIFYING_GLASS_EMOJI = "\uD83D\uDD0D";
+    public static final String CONVERSION_ICON = "\uD83D\uDD04";
 }
