@@ -2,18 +2,14 @@ package com.app.telegram.features.user;
 
 import com.app.telegram.features.user.storage.FileStorageService;
 import com.app.telegram.features.user.storage.StorageService;
-
 import java.util.concurrent.ConcurrentHashMap;
 
-
 public class UserSettingsProvider {
-
     private static volatile UserSettingsProvider instance;
     private final ConcurrentHashMap<Long, UserSettings> userSettingsMap;
     StorageService storageService = new FileStorageService();
 
     private UserSettingsProvider() {
-
         userSettingsMap = storageService.loadSettings();
     }
 

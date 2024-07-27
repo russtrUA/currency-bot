@@ -19,6 +19,7 @@ public enum Bank {
             return "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json";
         }
     };
+
     @Override
     public String toString() {
         return switch (this) {
@@ -28,4 +29,13 @@ public enum Bank {
         };
     }
     public abstract String getApiUrl();
+
+    public static boolean isValidBank(String bankName) {
+        try {
+            Bank.valueOf(bankName);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
 }

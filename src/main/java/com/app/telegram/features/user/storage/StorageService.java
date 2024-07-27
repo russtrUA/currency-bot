@@ -8,5 +8,4 @@ public interface StorageService {
     void saveSettings(ConcurrentHashMap<Long, UserSettings> userSettings);
 
     ConcurrentHashMap<Long, UserSettings> loadSettings();
-
 }
