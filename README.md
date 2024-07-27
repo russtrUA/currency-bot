@@ -1,6 +1,12 @@
 # Amazing Currency Rate Bot
 
-This repository contains the implementation of a Telegram bot that provides currency exchange rates from various banks.
+This repository contains the implementation of a Telegram bot that provides real-time currency exchange rates from various banks. It allows users to interact with the bot through a conversational interface, enabling them to customize settings and receive notifications based on their preferences.
+The core features of the bot include:
+
+- **Real-Time Currency Rates**: Fetches and displays the latest exchange rates from multiple banks.
+- **User Customization**: Allows users to customize their settings, including preferred currencies and notification times.
+- **Notifications**: Sends timely notifications to users based on their settings.
+- **Scalability**: Designed to be easily extendable for adding new banks or currencies.
 
 ## Table of Contents
 
@@ -8,11 +14,14 @@ This repository contains the implementation of a Telegram bot that provides curr
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
-- [Design of a Bot](#design-of-a-bot)
+- [Design of the Bot](#design-of-the-bot)
 - [User Settings](#user-settings)
 - [Currency Rate Provider](#currency-rate-provider)
 - [Notification Service](#notification-service)
 - [Additional information](#additional-information)
+   - [Adding a New Bank](#adding-a-new-bank)
+   - [Adding a New Currency](#adding-a-new-currency)
+   - [Create Your Own Bot](#create-your-own-bot)
 
 ## Getting Started
 
@@ -34,7 +43,7 @@ This repository contains the implementation of a Telegram bot that provides curr
     ```sh  
     mvn install  
     ```  
-   
+
 3. [Create Your Own Bot](#create-your-own-bot)
 
 ## Configuration
@@ -60,8 +69,8 @@ setx BOT_TOKEN your_telegram_bot_token
 
 To start the bot, simply run the `main` method in `AppLauncher`.  
 ### Telegram Bot Commands  
-- `/start`: Initiates the bot and displays a welcome message.  
-- Other commands and callback queries are handled to provide current exchange rates, user settings, and notifications.  
+- `/start`: Initiates the bot and displays a welcome message.
+- Other commands and callback queries are handled to provide current exchange rates, user settings, and notifications.
 
 ## Project Structure
 
@@ -73,8 +82,8 @@ The project is organized into the following packages:
 - **`com.app.telegram.features.notification`**: Contains the notification service.
 - **`com.app.telegram.model`**: Contains the data models for banks and currencies.
 
-## Design of a Bot
-Currency Rate Bot provides users with up-to-date currency rates and various customization options via a conversational interface. The design chosen for the Bot gives following advantages:
+## Design of the Bot
+Currency Rate Bot provides users with up-to-date currency rates and various customization options via a conversational interface. The chosen design for the bot offers the following advantages:
 - All callback queries are managed through the `handleCallback` method, simplifying the extension and maintenance of callback logic.
 - `CallbackHandler` utilizes helper methods for updating settings and sending keyboards, promoting code reuse and modularity. 
 - By fetching and updating user settings dynamically, the handler ensures that the user's preferences are always considered. 
