@@ -80,6 +80,7 @@ public class CurrencyRateProvider {
         if (rate == null) {
             return "N/A";
         }
-        return String.format("%." + signs + "f", rate);
+        String pattern = "%." + signs + "f";
+        return String.format(pattern, rate);
     }
 }

@@ -100,8 +100,8 @@ public class CurrencyRateThread extends Thread {
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         bankResponseStatuses.put(bank, response.statusCode());
-        LOGGER.info("Request to bank : " + bank.name());
-        LOGGER.info("Response status code : " + response.statusCode());
+        LOGGER.info("Request to bank : {}", bank.name());
+        LOGGER.info("Response status code : {}", response.statusCode());
         if (response.statusCode() != 200) {
             return objectMapper.readValue("[]", typeReference);
         }
