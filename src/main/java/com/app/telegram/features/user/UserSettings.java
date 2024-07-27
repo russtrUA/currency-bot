@@ -11,7 +11,6 @@ import java.util.*;
 @AllArgsConstructor
 @Getter
 public class UserSettings {
-    private Long chatId;
     private List<Bank> chosenBanks;
     private Integer chosenCountSigns;
     private List<Currency> chosenCurrencies;
