@@ -8,7 +8,8 @@ import com.app.telegram.model.Bank;
 import com.app.telegram.model.Currency;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -30,16 +31,25 @@ public class CurrencyRateThread extends Thread {
     private List<MonoBankRateResponseDto> monobankRateResponseDtoList;
     private List<NbuRateResponseDto> nbuRateResponseDtoList;
     private final Map<Bank, Integer> bankResponseStatuses = CurrencyRateProvider.getInstance().getBankResponseStatuses();
+    private static final Logger LOGGER = LoggerFactory.getLogger(CurrencyRateThread.class);
 
 
-    @SneakyThrows
     @Override
     public void run() {
         CurrencyRateProvider.getInstance().setBankRateDtoList(aggregateBankRates());
     }
 
-    private List<BankRateDto> aggregateBankRates() throws IOException, InterruptedException {
-        initializeBankRateLists();
+    private List<BankRateDto> aggregateBankRates() {
+        try {
+            monobankRateResponseDtoList = getBankRates(Bank.Monobank, new TypeReference<>() {
+            });
+            pryvatBankRateResponseDtoList = getBankRates(Bank.Pryvatbank, new TypeReference<>() {
+            });
+            nbuRateResponseDtoList = getBankRates(Bank.NBU, new TypeReference<>() {
+            });
+        } catch (IOException | InterruptedException e) {
+            LOGGER.error("An error occurred while processing the request: {}", e.getMessage(), e);
+        }
         List<BankRateDto> aggregatedRates = new ArrayList<>();
         aggregatedRates.addAll(mapPryvatBankRates(pryvatBankRateResponseDtoList));
         aggregatedRates.addAll(mapMonoBankRates(monobankRateResponseDtoList));
@@ -83,15 +93,6 @@ public class CurrencyRateThread extends Thread {
                 .collect(Collectors.toList());
     }
 
-    private void initializeBankRateLists() throws IOException, InterruptedException {
-        pryvatBankRateResponseDtoList = getBankRates(Bank.Pryvatbank, new TypeReference<>() {
-        });
-        monobankRateResponseDtoList = getBankRates(Bank.Monobank, new TypeReference<>() {
-        });
-        nbuRateResponseDtoList = getBankRates(Bank.NBU, new TypeReference<>() {
-        });
-    }
-
     private <T> T getBankRates(Bank bank, TypeReference<T> typeReference) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(bank.getApiUrl()))
@@ -99,6 +100,8 @@ public class CurrencyRateThread extends Thread {
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         bankResponseStatuses.put(bank, response.statusCode());
+        LOGGER.info("Request to bank : " + bank.name());
+        LOGGER.info("Response status code : " + response.statusCode());
         if (response.statusCode() != 200) {
             return objectMapper.readValue("[]", typeReference);
         }

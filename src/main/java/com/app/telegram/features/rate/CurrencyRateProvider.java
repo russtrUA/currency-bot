@@ -12,8 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.app.telegram.constants.Constants.BANK_EMOJI;
-import static com.app.telegram.constants.Constants.MONEY_WITH_WINGS;
+import static com.app.telegram.constants.Constants.*;
 
 
 @Setter
@@ -46,18 +45,21 @@ public class CurrencyRateProvider {
         StringBuilder result = new StringBuilder(MONEY_WITH_WINGS).append("<b>Поточні курси валют:</b>\n");
 
         for (Bank bank : chosenBanks) {
-            result.append("\n <b>").append(BANK_EMOJI).append(bank).append("</b>\n");
+            result.append("\n <b>").append(BANK_EMOJI).append(bank).append("</b>:\n");
             List<BankRateDto> ratesForBank = bankRateDtoList.stream()
                     .filter(rate -> rate.getBank() == bank && chosenCurrencies.contains(rate.getCurrency()))
                     .toList();
             if (ratesForBank.isEmpty())
                 if (bankResponseStatuses.get(bank) != 200)
-                    result.append("Технічні проблеми на стороні банку.\nСпробуйте через 10 хвилин\n");
-                else result.append("Для даного банку по вибраним \nвалютам курси не знайдено\n");
+                    result.append("\n" + WARNING_EMOJI + "Технічні проблеми на стороні банку.\nСпробуйте через 10 хвилин."
+                            + HOURGLASS_EMOJI + "\n");
+                else
+                    result.append("\n" + MAGNIFYING_GLASS_EMOJI + "Для даного банку курсів\n " +
+                            "по вибраних валютах не знайдено.\n");
             for (Currency currency : chosenCurrencies) {
                 for (BankRateDto rate : ratesForBank) {
                     if (rate.getCurrency() == currency) {
-                        result.append("<b>").append(currency).append(" => UAH").append("</b>\n");
+                        result.append("\n" + "<b>").append(currency).append(" => UAH").append("</b>\n");
                         if (rate.getMiddleRate() != null) {
                             result.append("  Курс: ").append(formatRate(rate.getMiddleRate(), chosenCountSigns)).append("\n");
                         }
