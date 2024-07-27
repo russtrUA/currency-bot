@@ -10,11 +10,8 @@ This repository contains the implementation of a Telegram bot that provides curr
 - [Project Structure](#project-structure)
 - [Design of a Bot](#design-of-a-bot)
 - [User Settings](#user-settings)
-- [Storage Service](#storage-service)
-- [Adding a New Bank](#adding-a-new-bank)
-- [Adding a New Currency](#adding-a-new-currency)
+- [Currency Rate Provider](#currency-rate-provider)
 - [Notification Service](#notification-service)
-- [Adventages of Using Threads](#advantages-of-using-threads)
 - [Additional information](#additional-information)
 
 ## Getting Started
@@ -95,23 +92,40 @@ User settings can be stored in a JSON file and updated once the user clicks on a
 - `UserSettingsProvider` uses a `ConcurrentHashMap` to manage user settings, enabling efficient and thread-safe access and modifications.
 - User settings are automatically saved to a persistent storage (`FileStorageService`) whenever they are updated, ensuring that settings are not lost between application restarts. 
   
-## Storage Service  
+### Storage Service  
 
-The `StorageService` interface allows for the implementation of alternative storage options. Currently, the `FileStorageService `class is provided, which stores settings in a JSON file. Alternatives could include:  
+The `StorageService` interface allows for the implementation of alternative storage options for user settings. Currently, the `FileStorageService `class is provided, which stores settings in a JSON file. Alternatives could include:  
 - **Database Storage**: Using an SQL or NoSQL database to store user settings.
 - **Cloud Storage**: Storing settings in a cloud service like AWS S3 or Google Cloud Storage.
 
-## Adding a New Bank  
+## Currency Rate Provider
+The `CurrencyRateProvider` class leverages the Singleton pattern to provide a consistent and easy-to-access mechanism for managing currency rates across the application. The design ensures that all components that need currency rate data are synchronized and working with the latest information. The main components of `CurrencyRateProvider`: 
+- The list `bankRateDtoList` holds the exchange rates from different banks.
+- The map `bankResponseStatuses` holds the response statuses of different banks, which is useful for error handling and status checking.
+- The method `getPrettyRatesByChatId` retrieves user settings, filters the bank rates based on the user's chosen banks and currencies, and formats the rates into a user-friendly string.
+- The `CurrencyRateThread` class updates the `CurrencyRateProvider` with new rates. This class interacts with the Singleton instance of `CurrencyRateProvider`. 
+- The run method of `CurrencyRateThread` updates the `bankRateDtoList` of the Singleton instance of `CurrencyRateProvider` with aggregated bank rates. This ensures that the latest rates are always available globally.
 
-To add a new bank to the bot, follow these steps:  
-1. **Update the Bank Enum**: Add a new entry in the Bank enum in `com/app/telegram/model/Bank.java`  
-2. **Implement Bank Rate Mapping**: Update the `CurrencyRateThread` class to handle the response from the new bank API. Add a method to parse and map the new bank's response to the `BankRateDto` objects.  
-3. **Fetch Bank Rates**: In the `initializeBankRateLists` method, fetch the rates from the new bank.  
-4. **Aggregate Bank Rates**: In the `aggregateBankRates` method, add the new bank rates to the list.  
-  
-## Adding a New Currency  
-To add a new currency, update the `Currency` enum in `Currency.java` with the new currency's details. For example:  
-  
+## Notification Service
+
+The `NotificationService` class handles sending notifications to users at specified times. Users can set their preferred notification times in the settings. Here are some advantages of the chosen implementation:
+- By using a `ScheduledExecutorService` with a thread pool, the notification service can handle multiple user notifications concurrently without performance degradation. 
+- The method `calcDelay` ensures that notifications are scheduled accurately based on the user's preferred time, allowing for efficient and timely delivery of messages. 
+- The use of a thread pool allows the application to manage multiple notification tasks simultaneously, ensuring that each user receives their notifications without delays.
+
+## Additional information:
+
+### Adding a New Bank
+
+To add a new bank to the bot, follow these steps:
+1. **Update the Bank Enum**: Add a new entry in the Bank enum in `com/app/telegram/model/Bank.java`
+2. **Implement Bank Rate Mapping**: Update the `CurrencyRateThread` class to handle the response from the new bank API. Add a method to parse and map the new bank's response to the `BankRateDto` objects.
+3. **Fetch Bank Rates**: In the `initializeBankRateLists` method, fetch the rates from the new bank.
+4. **Aggregate Bank Rates**: In the `aggregateBankRates` method, add the new bank rates to the list.
+
+### Adding a New Currency
+To add a new currency, update the `Currency` enum in `Currency.java` with the new currency's details. For example:
+
 ```Java  
 public enum Currency {  
     EUR(978),
@@ -122,33 +136,6 @@ public enum Currency {
     // Other methods...
 }  
 ```  
-## Notification Service
-
-The `NotificationService` class handles sending notifications to users at specified times. Users can set their preferred notification times in the settings. Here are some advantages of the chosen implementation:
-- By using a `ScheduledExecutorService` with a thread pool, the notification service can handle multiple user notifications concurrently without performance degradation. 
-- The method `calcDelay` ensures that notifications are scheduled accurately based on the user's preferred time, allowing for efficient and timely delivery of messages. 
-- The use of a thread pool allows the application to manage multiple notification tasks simultaneously, ensuring that each user receives their notifications without delays.
-
-## Advantages of Using Threads
-
-1. **Concurrency**: Allows multiple tasks to run concurrently, improving performance.
-2. **Responsiveness**: Keeps the application responsive by offloading time-consuming tasks to separate threads.
-
-### Scheduler for CurrencyRateThread
-The scheduler is used to periodically fetch and update currency rates:
-
-```Java  
-ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
-scheduler.scheduleAtFixedRate(currencyRateThread, 0, 10, TimeUnit.MINUTES);
-scheduler.scheduleAtFixedRate(notificationService, 0, 10, TimeUnit.MINUTES);
-```  
-
-#### Advantages:
-
-1. **Regular Updates**: Ensures the currency rates are updated at fixed intervals (every 10 minutes in this case).
-2. **Automated Execution**: Automatically handles the execution of the task without manual intervention.
-
-## Additional information:
 
 ### Create Your Own Bot
 
