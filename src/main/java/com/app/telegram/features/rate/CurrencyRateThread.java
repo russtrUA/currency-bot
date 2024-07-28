@@ -6,6 +6,7 @@ import com.app.telegram.features.rate.dto.responses.NbuRateResponseDto;
 import com.app.telegram.features.rate.dto.responses.PryvatBankRateResponseDto;
 import com.app.telegram.model.Bank;
 import com.app.telegram.model.Currency;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -27,12 +28,8 @@ import static com.app.telegram.model.Currency.isValidCurrency;
 public class CurrencyRateThread extends Thread {
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private List<PryvatBankRateResponseDto> pryvatBankRateResponseDtoList;
-    private List<MonoBankRateResponseDto> monobankRateResponseDtoList;
-    private List<NbuRateResponseDto> nbuRateResponseDtoList;
     private final Map<Bank, Integer> bankResponseStatuses = CurrencyRateProvider.getInstance().getBankResponseStatuses();
     private static final Logger LOGGER = LoggerFactory.getLogger(CurrencyRateThread.class);
-
 
     @Override
     public void run() {
@@ -40,16 +37,12 @@ public class CurrencyRateThread extends Thread {
     }
 
     private List<BankRateDto> aggregateBankRates() {
-        try {
-            monobankRateResponseDtoList = getBankRates(Bank.Monobank, new TypeReference<>() {
-            });
-            pryvatBankRateResponseDtoList = getBankRates(Bank.Pryvatbank, new TypeReference<>() {
-            });
-            nbuRateResponseDtoList = getBankRates(Bank.NBU, new TypeReference<>() {
-            });
-        } catch (IOException | InterruptedException e) {
-            LOGGER.error("An error occurred while processing the request: {}", e.getMessage(), e);
-        }
+        List<MonoBankRateResponseDto> monobankRateResponseDtoList = getBankRates(Bank.Monobank, new TypeReference<>() {
+        });
+        List<PryvatBankRateResponseDto> pryvatBankRateResponseDtoList = getBankRates(Bank.Pryvatbank, new TypeReference<>() {
+        });
+        List<NbuRateResponseDto> nbuRateResponseDtoList = getBankRates(Bank.NBU, new TypeReference<>() {
+        });
         List<BankRateDto> aggregatedRates = new ArrayList<>();
         aggregatedRates.addAll(mapPryvatBankRates(pryvatBankRateResponseDtoList));
         aggregatedRates.addAll(mapMonoBankRates(monobankRateResponseDtoList));
@@ -93,18 +86,29 @@ public class CurrencyRateThread extends Thread {
                 .collect(Collectors.toList());
     }
 
-    private <T> T getBankRates(Bank bank, TypeReference<T> typeReference) throws IOException, InterruptedException {
+    private <T> T getBankRates(Bank bank, TypeReference<T> typeReference) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(bank.getApiUrl()))
                 .GET()
                 .build();
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        bankResponseStatuses.put(bank, response.statusCode());
-        LOGGER.info("Request to bank : {}", bank.name());
-        LOGGER.info("Response status code : {}", response.statusCode());
-        if (response.statusCode() != 200) {
-            return objectMapper.readValue("[]", typeReference);
+        T emptyResult = null;
+        try {
+            emptyResult = objectMapper.readValue("[]", typeReference);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("An error occurred while processing empty list json: {}", e.getMessage(), e);
         }
-        return objectMapper.readValue(response.body(), typeReference);
+        try {
+            HttpResponse<String>response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            bankResponseStatuses.put(bank, response.statusCode());
+            LOGGER.info("Request to bank : {}", bank.name());
+            LOGGER.info("Response status code : {}", response.statusCode());
+            if (response.statusCode() != 200) {
+                return emptyResult;
+            }
+            return objectMapper.readValue(response.body(), typeReference);
+        } catch (IOException | InterruptedException e) {
+            LOGGER.error("An error occurred while processing the request: {}", e.getMessage(), e);
+        }
+        return emptyResult;
     }
 }
