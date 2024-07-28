@@ -42,32 +42,32 @@ public class CurrencyRateProvider {
         List<Currency> chosenCurrencies = userSettings.getChosenCurrencies();
         int chosenCountSigns = userSettings.getChosenCountSigns();
 
-        StringBuilder result = new StringBuilder(MONEY_WITH_WINGS).append("<b>Поточні курси валют:</b>\n");
+        StringBuilder result = new StringBuilder(MONEY_WITH_WINGS).append("<i><b>Поточні курси валют:</b></i>\n");
 
         for (Bank bank : chosenBanks) {
-            result.append("\n <b>").append(BANK_EMOJI).append(bank).append("</b>:\n");
+            result.append("\n <i><b>").append(BANK_EMOJI).append(bank).append("</b></i>:\n").append("\n");
             List<BankRateDto> ratesForBank = bankRateDtoList.stream()
                     .filter(rate -> rate.getBank() == bank && chosenCurrencies.contains(rate.getCurrency()))
                     .toList();
             if (ratesForBank.isEmpty())
                 if (bankResponseStatuses.get(bank) != 200)
-                    result.append("\n" + WARNING_EMOJI + "Технічні проблеми на стороні банку.\nСпробуйте через 10 хвилин."
-                            + HOURGLASS_EMOJI + "\n");
+                    result.append("<i>" + WARNING_EMOJI + "Технічні проблеми на стороні банку.\nСпробуйте через 10 хвилин."
+                            + HOURGLASS_EMOJI + "</i>\n");
                 else
-                    result.append("\n" + MAGNIFYING_GLASS_EMOJI + "Для даного банку курсів\n " +
-                            "по вибраних валютах не знайдено.\n");
+                    result.append("<i>" + MAGNIFYING_GLASS_EMOJI + "Для даного банку курсів\n " +
+                            "по вибраних валютах не знайдено.</i>\n");
             for (Currency currency : chosenCurrencies) {
                 for (BankRateDto rate : ratesForBank) {
                     if (rate.getCurrency() == currency) {
-                        result.append("\n" + "<b>").append(currency).append(" " + CONVERSION_ICON + " UAH").append("</b>\n");
+                        result.append("<i><b>").append(currency).append(" " + CONVERSION_ICON + " UAH").append("</b></i>\n");
                         if (rate.getMiddleRate() != null) {
-                            result.append("  Курс: ").append(formatRate(rate.getMiddleRate(), chosenCountSigns)).append("\n");
+                            result.append("  <i><u>Курс: ").append(formatRate(rate.getMiddleRate(), chosenCountSigns)).append("</u></i>\n");
                         }
                         if (rate.getBuyRate() != null) {
-                            result.append("  Купівля: ").append(formatRate(rate.getBuyRate(), chosenCountSigns)).append("\n");
+                            result.append("  <i><u>Купівля: ").append(formatRate(rate.getBuyRate(), chosenCountSigns)).append("</u></i>\n");
                         }
                         if (rate.getSaleRate() != null) {
-                            result.append("  Продаж: ").append(formatRate(rate.getSaleRate(), chosenCountSigns)).append("\n");
+                            result.append("  <i><u>Продаж: ").append(formatRate(rate.getSaleRate(), chosenCountSigns)).append("</u></i>\n");
                         }
                     }
                 }
