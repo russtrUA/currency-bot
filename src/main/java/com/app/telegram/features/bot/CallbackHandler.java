@@ -52,7 +52,7 @@ public class CallbackHandler {
                 sendSettingsKeyboard(chatId);
                 break;
             case "back_to_menu":
-                sendMainKeyboard(chatId, "Чим я можу допомогти?");
+                sendMainKeyboard(chatId);
                 break;
             case "get_info":
                 getCurrentSettings(userSettings);
@@ -126,8 +126,8 @@ public class CallbackHandler {
         sendMessage(chatId, ratesMessage, KeyboardFactory.getMainKeyboard());
     }
 
-    private void sendMainKeyboard(long chatId, String text) {
-        sendMessage(chatId, text, KeyboardFactory.getMainKeyboard());
+    private void sendMainKeyboard(long chatId) {
+        sendMessage(chatId, "Чим я можу допомогти?", KeyboardFactory.getMainKeyboard());
     }
 
     private void sendSettingsKeyboard(long chatId) {
@@ -207,7 +207,7 @@ public class CallbackHandler {
         try {
             telegramClient.execute(editMessageReplyMarkup);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            LOGGER.error("Error updating message to chatId {}: {}", chatId, e.getMessage(), e);
         }
     }
 
