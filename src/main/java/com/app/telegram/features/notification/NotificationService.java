@@ -52,25 +52,26 @@ public class NotificationService extends Thread {
 
     private void sendNotification(int hour) {
         ConcurrentHashMap<Long, UserSettings> userSettings = UserSettingsProvider.getInstance().getAllUserSettings();
-        CurrencyRateProvider rateProvider = CurrencyRateProvider.getInstance();
         userSettings.entrySet().stream()
-                .filter(entry -> entry.getValue().getTimeForNotify() != null)
-                .filter(entry -> entry.getValue().getTimeForNotify() == hour)
-                .forEach(entry -> {
-                    String messageText = rateProvider.getPrettyRatesByChatId(entry.getKey());
-                    SendMessage message = SendMessage
-                            .builder()
-                            .chatId(entry.getKey())
-                            .parseMode(ParseMode.HTML)
-                            .replyMarkup(KeyboardFactory.getMainKeyboard())
-                            .text(messageText)
-                            .build();
-                    try {
-                        telegramClient.execute(message);
-                        logger.info("Notification sent to user: {}", entry.getKey());
-                    } catch (TelegramApiException e) {
-                        logger.error("Failed to send notification to user: {}", entry.getKey(), e);
-                    }
-                });
+                .filter(entry -> entry.getValue().getTimeForNotify() != null && entry.getValue().getTimeForNotify() == hour)
+                .forEach(entry -> sendMessage(entry.getKey()));
+    }
+
+    private void sendMessage(Long chatId) {
+        CurrencyRateProvider rateProvider = CurrencyRateProvider.getInstance();
+        String messageText = rateProvider.getPrettyRatesByChatId(chatId);
+        SendMessage message = SendMessage
+                .builder()
+                .chatId(chatId)
+                .parseMode(ParseMode.HTML)
+                .replyMarkup(KeyboardFactory.getMainKeyboard())
+                .text(messageText)
+                .build();
+        try {
+            telegramClient.execute(message);
+            logger.info("Notification sent to user: {}", chatId);
+        } catch (TelegramApiException e) {
+            logger.error("Failed to send notification to user: {}", chatId, e);
+        }
     }
 }
