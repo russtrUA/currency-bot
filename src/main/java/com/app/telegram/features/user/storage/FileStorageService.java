@@ -23,7 +23,7 @@ public class FileStorageService implements StorageService {
         try {
             objectMapper.writeValue(new File(Constants.USER_SETTINGS_FILE), userSettings);
         } catch (IOException e) {
-            LOGGER.error("Неможливо зберегти налаштування користувача", e);
+            LOGGER.error("Error during saving user settings", e);
         }
     }
 
@@ -40,7 +40,7 @@ public class FileStorageService implements StorageService {
                 return objectMapper.readValue(settingsFile, new TypeReference<>() {
                 });
             } catch (IOException e) {
-                LOGGER.error("Неможливо завантажити налаштування користувача", e);
+                LOGGER.error("Error during loading user settings", e);
                 return new ConcurrentHashMap<>();
             }
         }

@@ -1,13 +1,15 @@
 package com.app.telegram.model;
 
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Getter
 public enum Currency {
     EUR(978),
     GBP(826),
     USD(840);
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(Currency.class);
     private final int code;
 
     Currency(int code) {
@@ -20,6 +22,7 @@ public enum Currency {
                 return currency;
             }
         }
+        LOGGER.error("Unknown currency code: {}", code);
         throw new IllegalArgumentException("Unknown currency code: " + code);
     }
 
