@@ -128,9 +128,9 @@ The `NotificationService` class handles sending notifications to users at specif
 
 To add a new bank to the bot, follow these steps:
 1. **Update the Bank Enum**: Add a new entry in the Bank enum in `com/app/telegram/model/Bank.java`
-2. **Implement Bank Rate Mapping**: Update the `CurrencyRateThread` class to handle the response from the new bank API. Add a method to parse and map the new bank's response to the `BankRateDto` objects.
-3. **Fetch Bank Rates**: In the `initializeBankRateLists` method, fetch the rates from the new bank.
-4. **Aggregate Bank Rates**: In the `aggregateBankRates` method, add the new bank rates to the list.
+2. **Create a new DTO class**: Create a new DTO class in the package `com/app/telegram/features/rate/dto/responses` with the relative bank response structure. 
+3. **Implement Bank Rate Mapping**: Update the `CurrencyRateThread` class to handle the response from the new bank API. Add a method to parse and map the new bank's response to the `BankRateDto` objects.
+4. **Aggregate Bank Rates**: In the `aggregateBankRates` method, fetch the rates from the new bank and add the new bank rates to the list.
 
 ### Adding a New Currency
 To add a new currency, update the `Currency` enum in `Currency.java` with the new currency's details. For example:
